@@ -41,7 +41,7 @@ class _FloorPlanManagementPageState extends State<FloorPlanManagementPage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: status,
+                initialValue: status,
                 items: const [
                   DropdownMenuItem(value: 'Available', child: Text('Available')),
                   DropdownMenuItem(value: 'Booked', child: Text('Booked')),
@@ -63,7 +63,7 @@ class _FloorPlanManagementPageState extends State<FloorPlanManagementPage> {
             onPressed: () {
               setState(() {
                 if (isEdit) {
-                  booths[index!] = {
+                  booths[index] = {
                     'booth': boothController.text,
                     'size': sizeController.text,
                     'status': status,
@@ -164,7 +164,7 @@ class _FloorPlanManagementPageState extends State<FloorPlanManagementPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Floor Plan Management'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor:  Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),

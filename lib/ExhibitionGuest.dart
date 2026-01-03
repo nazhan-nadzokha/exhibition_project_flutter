@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'Login.dart';
 import 'Guest.dart';
 
-
 class ExhibitionGuest extends StatelessWidget {
   const ExhibitionGuest({super.key});
 
@@ -13,28 +12,28 @@ class ExhibitionGuest extends StatelessWidget {
     {
       'title': 'Malaysia Brand Day 2026',
       'desc':
-      'Malaysia First-Ever National Brand Showcase\n8th -10th Jan 2026\n10:00 AM to 6:00 PM\nHall 1 - Hall 4',
+          'Malaysia First-Ever National Brand Showcase\n8th -10th Jan 2026\n10:00 AM to 6:00 PM\nHall 1 - Hall 4',
       'status': 'Ongoing',
       'image': 'assets/BrandDay.jpg',
     },
     {
       'title': 'Comic Fiesta 2026',
       'desc':
-      'Malaysia event related to the Anime, Comics and Games (ACG) culture!\n\n20th - 21st December 2026\n9:30AM to 10PM\nHall 2 - 5',
+          'Malaysia event related to the Anime, Comics and Games (ACG) culture!\n\n20th - 21st December 2026\n9:30AM to 10PM\nHall 2 - 5',
       'status': 'Upcoming',
       'image': 'assets/Comic.jpg',
     },
     {
       'title': 'International Automodified 2026',
       'desc':
-      'The world fastest growing car tuning & lifestyle show series\n\n8th - 9th January 2026\n10AM to 7PM\nHall 5 - 8',
+          'The world fastest growing car tuning & lifestyle show series\n\n8th - 9th January 2026\n10AM to 7PM\nHall 5 - 8',
       'status': 'Ongoing',
       'image': 'assets/Cars.jpg',
     },
     {
       'title': 'Healthcare Innovation',
       'desc':
-      'Latest medical technologies and innovations transforming modern healthcare.\n\n16th - 18th June 2026\n10AM to 8PM\nHall 3 - 5',
+          'Latest medical technologies and innovations transforming modern healthcare.\n\n16th - 18th June 2026\n10AM to 8PM\nHall 3 - 5',
       'status': 'Upcoming',
       'image': 'assets/care.jpg',
     },
@@ -52,9 +51,7 @@ class ExhibitionGuest extends StatelessWidget {
   List<Widget> _buildGridCards(BuildContext context) {
     return events.map((event) {
       return Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,17 +60,16 @@ class ExhibitionGuest extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 30 / 11, //TODO:sizing of card
-                  child: Image.asset(
-                    event['image']!,
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.asset(event['image']!, fit: BoxFit.cover),
                 ),
                 Positioned(
                   top: 8,
                   right: 8,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: event['status'] == 'Ongoing'
                           ? Colors.green
@@ -82,10 +78,7 @@ class ExhibitionGuest extends StatelessWidget {
                     ),
                     child: Text(
                       event['status'] ?? 'Unknown',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
                     ),
                   ),
                 ),
@@ -105,10 +98,7 @@ class ExhibitionGuest extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 event['desc'] ?? 'No description',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
             const Spacer(),
@@ -126,7 +116,8 @@ class ExhibitionGuest extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
+                        builder: (context) => const LoginPage(),
+                      ),
                     );
                   },
                   child: const Text('Book Now'),
@@ -147,7 +138,7 @@ class ExhibitionGuest extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 69,
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         title: const Text('Berjaya Convention'),
         actions: [
           IconButton(
@@ -169,10 +160,9 @@ class ExhibitionGuest extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              SizedBox(height: 100,
-                child:
-                DrawerHeader(
-
+              SizedBox(
+                height: 100,
+                child: DrawerHeader(
                   decoration: BoxDecoration(color: Colors.blueGrey.shade500),
                   child: const Text(
                     'Explore More Our Service',
@@ -195,8 +185,9 @@ class ExhibitionGuest extends StatelessWidget {
                 leading: const Icon(Icons.book_online_outlined),
                 title: const Text('Booking'),
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const LoginPage()));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
                 },
               ),
             ],
@@ -222,8 +213,8 @@ class ExhibitionGuest extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Stats
-            Row(
-              children: const [
+            const Row(
+              children: [
                 _StatCard(
                   title: 'Total',
                   value: '5',
@@ -269,16 +260,17 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color titleColor;
 
-  const _StatCard(
-      {required this.title, required this.value, required this.titleColor});
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.titleColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(

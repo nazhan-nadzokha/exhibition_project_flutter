@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'admin/admin_dashboard.dart';
-import 'organizer.dart';
+import 'organizer/organizer.dart';
 import 'UserHome.dart';
 import 'forgot_password.dart';
 
@@ -22,13 +20,15 @@ class _LoginPageState extends State<LoginPage> {
 
   // Register Controllers
   final TextEditingController registerEmailController = TextEditingController();
-  final TextEditingController registerPasswordController = TextEditingController();
+  final TextEditingController registerPasswordController =
+      TextEditingController();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
   final AuthService authService = AuthService();
+  final UserService userService = UserService();
 
   String? errorMessage;
   bool switchValue = false;
@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
 
       // Check user role and navigate accordingly
       await _checkUserRoleAndNavigate(userCredential.user!);
-
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = _getLoginErrorMessage(e.code);
@@ -101,7 +100,15 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       // Create user profile in Firestore (if needed)
-      await _createUserProfile(userCredential.user!);
+      await userService.createUserProfile(
+        email: registerEmailController.text.trim(),
+        firstName: firstNameController.text.trim(),
+        lastName: lastNameController.text.trim(),
+        dob: dobController.text.trim(),
+        phone: phoneController.text.trim(),
+        userId: userCredential.user!.uid,
+        role: 'User',
+      );
 
       // Show success message and switch to login
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +125,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         isLogin = true;
       });
-
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = _getRegisterErrorMessage(e.code);
@@ -169,7 +175,9 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     }
 
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(registerEmailController.text)) {
+    if (!RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    ).hasMatch(registerEmailController.text)) {
       setState(() {
         errorMessage = 'Please enter a valid email address';
       });
@@ -179,30 +187,30 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 
-  Future<void> _createUserProfile(User user) async {
-    // TODO: Implement Firestore user profile creation
-    // You'll need to create a Firestore service or add Firestore here
-    print('Creating profile for user: ${user.uid}');
-    print('Email: ${user.email}');
-    print('First Name: ${firstNameController.text}');
-    print('Last Name: ${lastNameController.text}');
-    print('DOB: ${dobController.text}');
-    print('Phone: ${phoneController.text}');
+  // Future<void> _createUserProfile(User user) async {
+  //   // TODO: Implement Firestore user profile creation
+  //   // You'll need to create a Firestore service or add Firestore here
+  //   print('Creating profile for user: ${user.uid}');
+  //   print('Email: ${user.email}');
+  //   print('First Name: ${firstNameController.text}');
+  //   print('Last Name: ${lastNameController.text}');
+  //   print('DOB: ${dobController.text}');
+  //   print('Phone: ${phoneController.text}');
 
-    // storing additional user data:
-     await FirebaseFirestore.instance
-       .collection('users')
-       .doc(user.uid)
-       .set({
-         'email': user.email,
-         'firstName': firstNameController.text,
-         'lastName': lastNameController.text,
-         'dob': dobController.text,
-         'phone': phoneController.text,
-         'createdAt': FieldValue.serverTimestamp(),
-    //     'role': 'user', // default role
-       });
-  }
+  //   // storing additional user data:
+  //    await FirebaseFirestore.instance
+  //      .collection('users')
+  //      .doc(user.uid)
+  //      .set({
+  //        'email': user.email,
+  //        'firstName': firstNameController.text,
+  //        'lastName': lastNameController.text,
+  //        'dob': dobController.text,
+  //        'phone': phoneController.text,
+  //        'createdAt': FieldValue.serverTimestamp(),
+  //   //     'role': 'user', // default role
+  //      });
+  // }
 
   Future<void> _checkUserRoleAndNavigate(User user) async {
     final email = user.email ?? '';
@@ -222,7 +230,6 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     }
-
   }
 
   void _clearRegisterFields() {
@@ -238,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         title: const Text('My Account'),
         centerTitle: true,
       ),
@@ -286,14 +293,18 @@ class _LoginPageState extends State<LoginPage> {
                                 horizontal: 20,
                               ),
                               decoration: BoxDecoration(
-                                color: isLogin ? Colors.blue : Colors.transparent,
+                                color: isLogin
+                                    ? Colors.blue
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Center(
                                 child: Text(
                                   'Login',
                                   style: TextStyle(
-                                    color: isLogin ? Colors.white : Colors.black,
+                                    color: isLogin
+                                        ? Colors.white
+                                        : Colors.black,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -317,14 +328,18 @@ class _LoginPageState extends State<LoginPage> {
                                 horizontal: 20,
                               ),
                               decoration: BoxDecoration(
-                                color: !isLogin ? Colors.blue : Colors.transparent,
+                                color: !isLogin
+                                    ? Colors.blue
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Center(
                                 child: Text(
                                   'Register',
                                   style: TextStyle(
-                                    color: !isLogin ? Colors.white : Colors.black,
+                                    color: !isLogin
+                                        ? Colors.white
+                                        : Colors.black,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -478,7 +493,8 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const ForgotPasswordScreen(),
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
                               ),
                             );
                           },
@@ -501,21 +517,23 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: isLoading
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
                             : const Text(
-                          'LOGIN',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                                'LOGIN',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -532,21 +550,23 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: isLoading
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
                             : const Text(
-                          'REGISTER',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                                'REGISTER',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -555,9 +575,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Divider with OR text
                   Row(
                     children: [
-                      const Expanded(
-                        child: Divider(),
-                      ),
+                      const Expanded(child: Divider()),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -565,9 +583,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       ),
-                      const Expanded(
-                        child: Divider(),
-                      ),
+                      const Expanded(child: Divider()),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -582,9 +598,7 @@ class _LoginPageState extends State<LoginPage> {
           if (isLoading)
             Container(
               color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
         ],
       ),

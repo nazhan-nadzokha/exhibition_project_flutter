@@ -13,16 +13,16 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar:AppBar(
         toolbarHeight: 69,
-        backgroundColor: Colors.blueGrey,
-        title:  Text('Berjaya Convention'),
+        backgroundColor: Colors.blueAccent,
+        title:  const Text('Berjaya Convention'),
 
 
 //Account Icon
         actions: [
           IconButton(
-            icon: Icon(Icons.account_circle_outlined),
+            icon: const Icon(Icons.account_circle_outlined),
             onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfilePage()));
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ProfilePage()));
             },
           ),
         ],
@@ -41,17 +41,17 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.emoji_events),
-                  title: Text('Exhibition'),
+                  leading: const Icon(Icons.emoji_events),
+                  title: const Text('Exhibition'),
               onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
               },
                 ),
                 ListTile(
-                  leading: Icon(Icons.book),
-                  title: Text('Booking '),
+                  leading: const Icon(Icons.book),
+                  title: const Text('Booking '),
                   onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BookingPage()));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const BookingPage()));
                   },
                 ),
               ],
@@ -103,7 +103,7 @@ class HomePage extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
                     },
                     child: const Text(
                       'See All',
@@ -151,7 +151,7 @@ class HomePage extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
                     },
                     child: const Text(
                       'See All',

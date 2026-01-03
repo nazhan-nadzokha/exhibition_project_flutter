@@ -30,7 +30,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Login'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -39,10 +39,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
           children: [
             const Text(
               'Administrator Login',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 24),
@@ -70,10 +67,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
             const SizedBox(height: 12),
 
             if (errorMessage != null)
-              Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(errorMessage!, style: const TextStyle(color: Colors.red)),
 
             const SizedBox(height: 24),
 
@@ -97,4 +91,3 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
     );
   }
 }
-

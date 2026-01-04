@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'Exhibition.dart';
 import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_launcher
@@ -6,91 +5,107 @@ import 'Booking.dart';
 import '../Profile.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool? isFromOrganizer;
+  const HomePage({super.key, this.isFromOrganizer = false});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:AppBar(
+      appBar: AppBar(
         toolbarHeight: 69,
         backgroundColor: Colors.blueAccent,
-        title:  const Text('Berjaya Convention'),
+        title: const Text('Berjaya Convention'),
 
-
-//Account Icon
+        //Account Icon
         actions: [
           IconButton(
             icon: const Icon(Icons.account_circle_outlined),
             onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ProfilePage()));
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
             },
           ),
         ],
       ),
-//Create Drawer
-      drawer:Drawer(
-          child:Container( color:Colors.blueGrey.shade200 ,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                SizedBox(height: 100,
-                  child: DrawerHeader(decoration: BoxDecoration(color: Colors.blueGrey.shade500),
-                    child: const Text('Explore More Our Service',
-                      style: TextStyle(color: Colors.white),),
-
-                  ),
+      //Create Drawer
+      drawer: (!isFromOrganizer!)
+          ? Drawer(
+              child: Container(
+                color: Colors.blueGrey.shade200,
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    SizedBox(
+                      height: 100,
+                      child: DrawerHeader(
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey.shade500,
+                        ),
+                        child: const Text(
+                          'Explore More Our Service',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.emoji_events),
+                      title: const Text('Exhibition'),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const Exhibition(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.book),
+                      title: const Text('Booking '),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const BookingPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                ListTile(
-                  leading: const Icon(Icons.emoji_events),
-                  title: const Text('Exhibition'),
-              onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
-              },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.book),
-                  title: const Text('Booking '),
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const BookingPage()));
-                  },
-                ),
-              ],
-            ),
-          )
-      ),
-      body:SingleChildScrollView(
-        child: Column( //Header
+              ),
+            )
+          : null,
+      body: SingleChildScrollView(
+        child: Column(
+          //Header
           children: [
             Container(
-              width: double.infinity,  // This makes it full width
+              width: double.infinity, // This makes it full width
               height: 130,
-              padding:const EdgeInsets.all(24) ,
-              decoration:const BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topLeft,
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                colors:[Color(0xFF2563eb),
-                  Color(0xFF1e40af),] )
-              ) ,
-              child: const Text('Welcome to \nBerjaya International Convention Center',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                  colors: [Color(0xFF2563eb), Color(0xFF1e40af)],
+                ),
               ),
+              child: const Text(
+                'Welcome to \nBerjaya International Convention Center',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-
 
             // "Current Event" Title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
+                  const Icon(Icons.event, color: Colors.blueGrey, size: 24),
                   const SizedBox(width: 8),
                   const Text(
                     'Current Event',
@@ -103,14 +118,15 @@ class HomePage extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const Exhibition(),
+                        ),
+                      );
                     },
                     child: const Text(
                       'See All',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                      ),
+                      style: TextStyle(color: Colors.blue, fontSize: 15),
                     ),
                   ),
                 ],
@@ -125,20 +141,13 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 20),
             const CurentCard2(),
 
-
-
-            const SizedBox(height: 40),// gap
-
+            const SizedBox(height: 40), // gap
             //Upcoming Event
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
+                  const Icon(Icons.event, color: Colors.blueGrey, size: 24),
                   const SizedBox(width: 8),
                   const Text(
                     'Upcoming Event',
@@ -151,36 +160,32 @@ class HomePage extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const Exhibition()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const Exhibition(),
+                        ),
+                      );
                     },
                     child: const Text(
                       'See All',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                      ),
+                      style: TextStyle(color: Colors.blue, fontSize: 15),
                     ),
                   ),
                 ],
               ),
             ),
             //Current Card
-           const UpcomingCard(),
+            const UpcomingCard(),
             const SizedBox(height: 20),
             const UpcomingCard2(),
 
-            const SizedBox(height: 40),// gap
-
-// Booth Layout Title
+            const SizedBox(height: 40), // gap
+            // Booth Layout Title
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.map_outlined,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
+                  Icon(Icons.map_outlined, color: Colors.blueGrey, size: 24),
                   SizedBox(width: 8),
                   Text(
                     'Booth Layout',
@@ -190,27 +195,22 @@ class HomePage extends StatelessWidget {
                       color: Colors.blueGrey,
                     ),
                   ),
-
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
             const LayoutCard(),
-            const SizedBox(height: 20,),
+            const SizedBox(height: 20),
             const BookButton(),
-            const SizedBox(height: 40,),
+            const SizedBox(height: 40),
 
             //Contact us title
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.contact_mail,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
+                  Icon(Icons.contact_mail, color: Colors.blueGrey, size: 24),
                   SizedBox(width: 8),
                   Text(
                     'Contact Us',
@@ -220,47 +220,39 @@ class HomePage extends StatelessWidget {
                       color: Colors.blueGrey,
                     ),
                   ),
-
                 ],
               ),
             ),
 
-            const SizedBox(height: 20,),
+            const SizedBox(height: 20),
             const ContactCard(),
-
-
-
-
           ],
         ),
-
       ),
     );
   }
 }
 
-
-
-class CurentCard extends StatelessWidget{
+class CurentCard extends StatelessWidget {
   const CurentCard({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-
         width: 350,
         height: 200,
-        decoration:  BoxDecoration(
-          border:  Border.all(
+        decoration: BoxDecoration(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/BrandDay.jpg'),
-              fit: BoxFit.cover),
-
+          image: const DecorationImage(
+            image: AssetImage('assets/BrandDay.jpg'),
+            fit: BoxFit.cover,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -268,13 +260,15 @@ class CurentCard extends StatelessWidget{
           children: [
             // Spacer to push description to bottom
             const Spacer(),
-// Description container at bottom
+            // Description container at bottom
             Container(
               height: 70,
               width: double.infinity,
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6), // Semi-transparent background
+                color: Colors.black.withOpacity(
+                  0.6,
+                ), // Semi-transparent background
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(10.0),
                   bottomRight: Radius.circular(10.0),
@@ -293,74 +287,69 @@ class CurentCard extends StatelessWidget{
           ],
         ),
       ),
-
-
-
     );
   }
-
 }
-class CurentCard2 extends StatelessWidget{
+
+class CurentCard2 extends StatelessWidget {
   const CurentCard2({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-
         width: 350,
         height: 200,
-        decoration:  BoxDecoration(
-          border:  Border.all(
+        decoration: BoxDecoration(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/Cars.jpg'),
-          fit: BoxFit.cover),
-
+          image: const DecorationImage(
+            image: AssetImage('assets/Cars.jpg'),
+            fit: BoxFit.cover,
+          ),
         ),
-child: Column(
-  mainAxisAlignment: MainAxisAlignment.end,
-  crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-  // Spacer to push description to bottom
-  const Spacer(),
-// Description container at bottom
-  Container(
-    height: 70,
-    width: double.infinity,
-    padding: const EdgeInsets.all(8.0),
-    decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.6), // Semi-transparent background
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(10.0),
-        bottomRight: Radius.circular(10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Spacer to push description to bottom
+            const Spacer(),
+            // Description container at bottom
+            Container(
+              height: 70,
+              width: double.infinity,
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(
+                  0.6,
+                ), // Semi-transparent background
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(10.0),
+                  bottomRight: Radius.circular(10.0),
+                ),
+              ),
+              child: const Text(
+                'Event Description: Annual Tech Conference 2024',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-    child: const Text(
-      'Event Description: Annual Tech Conference 2024',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
-      ),
-      overflow: TextOverflow.ellipsis,
-    ),
-  ),
-],
-),
-      ),
-
-
-
     );
   }
-
 }
 
-class UpcomingCard extends StatelessWidget{
+class UpcomingCard extends StatelessWidget {
   const UpcomingCard({super.key});
 
   @override
@@ -370,7 +359,7 @@ class UpcomingCard extends StatelessWidget{
         width: 350,
         height: 110,
         decoration: BoxDecoration(
-          border:  Border.all(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
@@ -381,12 +370,13 @@ class UpcomingCard extends StatelessWidget{
             Container(
               width: 90,
               height: 80,
-              decoration:const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors:[Color(0xFF2563eb),
-                        Color(0xFF1e40af),] )
-              ) ,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2563eb), Color(0xFF1e40af)],
+                ),
+              ),
               child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -409,49 +399,43 @@ class UpcomingCard extends StatelessWidget{
                 ],
               ),
             ),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Asean Summit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Asean Summit',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Meet our prime minister be as a leader of ASEAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Meet our prime minister be as a leader of ASEAN',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      maxLines: 2,
                     ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '3:00 PM - 5:00 PM',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
+                    const SizedBox(height: 4),
+                    Text(
+                      '3:00 PM - 5:00 PM',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                     ),
-                  ),
-
-                ],
+                  ],
+                ),
               ),
-            ))
+            ),
           ],
         ),
       ),
     );
   }
-
 }
 
-class UpcomingCard2 extends StatelessWidget{
+class UpcomingCard2 extends StatelessWidget {
   const UpcomingCard2({super.key});
 
   @override
@@ -461,7 +445,7 @@ class UpcomingCard2 extends StatelessWidget{
         width: 350,
         height: 110,
         decoration: BoxDecoration(
-          border:  Border.all(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
@@ -472,12 +456,13 @@ class UpcomingCard2 extends StatelessWidget{
             Container(
               width: 90,
               height: 80,
-              decoration:const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors:[Color(0xFF2563eb),
-                        Color(0xFF1e40af),] )
-              ) ,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2563eb), Color(0xFF1e40af)],
+                ),
+              ),
               child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -500,49 +485,43 @@ class UpcomingCard2 extends StatelessWidget{
                 ],
               ),
             ),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Asean Summit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Asean Summit',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Meet our prime minister be as a leader of ASEAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Meet our prime minister be as a leader of ASEAN',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      maxLines: 2,
                     ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '3:00 PM - 5:00 PM',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
+                    const SizedBox(height: 4),
+                    Text(
+                      '3:00 PM - 5:00 PM',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                     ),
-                  ),
-
-                ],
+                  ],
+                ),
               ),
-            ))
+            ),
           ],
         ),
       ),
     );
   }
-
 }
 
-class LayoutCard extends StatelessWidget{
+class LayoutCard extends StatelessWidget {
   const LayoutCard({super.key});
 
   @override
@@ -551,42 +530,40 @@ class LayoutCard extends StatelessWidget{
       child: Container(
         width: 350,
         height: 300,
-        decoration:  BoxDecoration(
-          border:  Border.all(
+        decoration: BoxDecoration(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/Layout.png'),
-              fit: BoxFit.contain),
+          image: const DecorationImage(
+            image: AssetImage('assets/Layout.png'),
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
   }
 }
 
-class BookButton extends StatelessWidget{
+class BookButton extends StatelessWidget {
   const BookButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: FloatingActionButton.extended(
-          backgroundColor: Colors.blueAccent,
-          label:const Text('Booking'),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => const BookingPage()),
-            );
-          },
-
-
-      )
+      child: FloatingActionButton.extended(
+        backgroundColor: Colors.blueAccent,
+        label: const Text('Booking'),
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => const BookingPage()));
+        },
+      ),
     );
   }
-
 }
 
 class ContactCard extends StatelessWidget {
@@ -602,7 +579,8 @@ class ContactCard extends StatelessWidget {
           color: Colors.amber[50],
           borderRadius: BorderRadius.circular(12.0),
         ),
-        child: Padding(// to create empty space in container
+        child: Padding(
+          // to create empty space in container
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -634,8 +612,10 @@ class ContactCard extends StatelessWidget {
                 onPressed: () async {
                   String? encodeQueryParameters(Map<String, String> params) {
                     return params.entries
-                        .map((MapEntry<String, String> e) =>
-                    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                        .map(
+                          (MapEntry<String, String> e) =>
+                              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+                        )
                         .join('&');
                   }
 
@@ -647,12 +627,11 @@ class ContactCard extends StatelessWidget {
                     }),
                   );
 
-                  if (await canLaunchUrl(emailLaunchUri)){
+                  if (await canLaunchUrl(emailLaunchUri)) {
                     launchUrl(emailLaunchUri);
-                  }else{
+                  } else {
                     throw Exception('Could not launch $emailLaunchUri');
                   }
-
                 },
                 icon: const Icon(Icons.email, size: 20),
                 label: const Padding(
@@ -688,20 +667,18 @@ class ContactCard extends StatelessWidget {
 
               //indirect call
               OutlinedButton.icon(
-                onPressed: () async{
-                  final Uri telLaunchUri = Uri( //determine the scheme and path
-                  scheme: 'tel',
-                      path: '+1-555-010-999',
+                onPressed: () async {
+                  final Uri telLaunchUri = Uri(
+                    //determine the scheme and path
+                    scheme: 'tel',
+                    path: '+1-555-010-999',
                   );
                   launchUrl(telLaunchUri); //call Uri
                 },
                 icon: const Icon(Icons.phone, size: 20),
                 label: const Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    '+1-555-010-999',
-                    style: TextStyle(fontSize: 15),
-                  ),
+                  child: Text('+1-555-010-999', style: TextStyle(fontSize: 15)),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.brown),
@@ -717,6 +694,4 @@ class ContactCard extends StatelessWidget {
       ),
     );
   }
-
-
 }

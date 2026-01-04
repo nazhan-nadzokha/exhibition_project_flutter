@@ -134,7 +134,7 @@ class _RequestsListPageState extends State<RequestsListPage> {
                 children: [
                   Expanded(
                     child: Text(
-                      request.eventName ?? 'Unknown Event',
+                      request.eventTitle,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -150,11 +150,11 @@ class _RequestsListPageState extends State<RequestsListPage> {
                     ),
                     decoration: BoxDecoration(
                       color: _getStatusColor(
-                        request.requestStatus,
+                        request.status,
                       ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _getStatusColor(request.requestStatus),
+                        color: _getStatusColor(request.status),
                         width: 1,
                       ),
                     ),
@@ -162,17 +162,17 @@ class _RequestsListPageState extends State<RequestsListPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          _getStatusIcon(request.requestStatus),
+                          _getStatusIcon(request.status),
                           size: 14,
-                          color: _getStatusColor(request.requestStatus),
+                          color: _getStatusColor(request.status),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          request.requestStatus.toUpperCase(),
+                          request.status.toUpperCase(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: _getStatusColor(request.requestStatus),
+                            color: _getStatusColor(request.status),
                           ),
                         ),
                       ],
@@ -184,16 +184,16 @@ class _RequestsListPageState extends State<RequestsListPage> {
               _buildInfoRow(
                 Icons.storefront,
                 'Booth:',
-                request.boothName ?? 'Unknown',
+                request.boothName,
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
                 Icons.person,
                 'User:',
-                request.userName ?? request.userEmail,
+                request.companyName,
               ),
               const SizedBox(height: 8),
-              _buildInfoRow(Icons.email, 'Email:', request.userEmail),
+              _buildInfoRow(Icons.email, 'Email:', request.companyEmail),
             ],
           ),
         ),
@@ -365,17 +365,15 @@ class RequestDetailsBottomSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            _buildDetailItem('Event Name', request.eventName ?? 'N/A'),
-            _buildDetailItem('Booth Name', request.boothName ?? 'N/A'),
-            _buildDetailItem('User Name', request.userName ?? 'N/A'),
-            _buildDetailItem('User Email', request.userEmail),
-            _buildDetailItem('Status', request.requestStatus.toUpperCase()),
+            _buildDetailItem('Event Name', request.eventTitle),
+            _buildDetailItem('Booth Name', request.boothName),
+            _buildDetailItem('User Name', request.companyName),
+            _buildDetailItem('User Email', request.companyEmail),
+            _buildDetailItem('Status', request.status.toUpperCase()),
             _buildDetailItem('Reason', request.reason ?? 'N/A'),
             _buildDetailItem(
               'Submitted',
-              request.createdAt != null
-                  ? '${request.createdAt!.day}/${request.createdAt!.month}/${request.createdAt!.year} ${request.createdAt!.hour}:${request.createdAt!.minute.toString().padLeft(2, '0')}'
-                  : 'N/A',
+              '${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year} ${request.createdAt.hour}:${request.createdAt.minute.toString().padLeft(2, '0')}',
             ),
             const SizedBox(height: 30),
             if (request.isPending) ...{

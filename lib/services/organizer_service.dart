@@ -6,6 +6,8 @@ import 'package:exhibition_project_new_version/organizer/model/request_model.dar
 
 class OrganizerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _requestsCollection =
+      'booth_applications'; // Updated collection name
 
   // Update this method to return List<Event>
   Future<List<Event>> getAllEventsWithBooths() async {
@@ -56,10 +58,12 @@ class OrganizerService {
 
   Future<int> getRequestCount() async {
     try {
-      final getRequestCount = await _firestore.collection('requests').get();
+      final getRequestCount = await _firestore
+          .collection(_requestsCollection)
+          .get();
       return getRequestCount.size;
     } catch (e) {
-      log('Error getting events with booths: $e');
+      log('Error getting request count: $e');
       return 0;
     }
   }
@@ -67,12 +71,15 @@ class OrganizerService {
   Future<int> getPendingRequest() async {
     try {
       final getPendingRequest = await _firestore
-          .collection('requests')
-          .where('requestStatus', isEqualTo: 'Pending')
+          .collection(_requestsCollection)
+          .where(
+            'status',
+            isEqualTo: 'pending',
+          ) // Changed from 'requestStatus' to 'status'
           .get();
       return getPendingRequest.size;
     } catch (e) {
-      log('Error getting events with booths: $e');
+      log('Error getting pending requests: $e');
       return 0;
     }
   }
@@ -80,12 +87,31 @@ class OrganizerService {
   Future<int> getApprovedRequest() async {
     try {
       final getApprovedRequest = await _firestore
-          .collection('requests')
-          .where('requestStatus', isEqualTo: 'Approved')
+          .collection(_requestsCollection)
+          .where(
+            'status',
+            isEqualTo: 'approved',
+          ) // Changed from 'requestStatus' to 'status'
           .get();
       return getApprovedRequest.size;
     } catch (e) {
-      log('Error getting events with booths: $e');
+      log('Error getting approved requests: $e');
+      return 0;
+    }
+  }
+
+  Future<int> getRejectedRequest() async {
+    try {
+      final getRejectedRequest = await _firestore
+          .collection(_requestsCollection)
+          .where(
+            'status',
+            isEqualTo: 'rejected',
+          ) // Changed from 'requestStatus' to 'status'
+          .get();
+      return getRejectedRequest.size;
+    } catch (e) {
+      log('Error getting rejected requests: $e');
       return 0;
     }
   }
@@ -93,102 +119,45 @@ class OrganizerService {
   // Get all requests with event and booth details
   Future<List<Request>> getAllRequests() async {
     try {
-      // Get all requests
+      // Get all requests from correct collection
       final requestsSnapshot = await _firestore
-          .collection('requests')
+          .collection(_requestsCollection)
           .orderBy('createdAt', descending: true)
           .get();
 
-      // Process each request to get additional details
-      final requests = await Future.wait(
-        requestsSnapshot.docs.map((requestDoc) async {
-          final requestData = requestDoc.data();
+      // Process each request
+      final requests = requestsSnapshot.docs.map((requestDoc) {
+        final requestData = requestDoc.data();
 
-          // Create base request without event/booth names
-          Request request = Request(
-            id: requestDoc.id,
-            boothId: requestData['boothId'] ?? '',
-            eventId: requestData['eventId'] ?? '',
-            requestStatus: requestData['requestStatus'] ?? 'pending',
-            reason: requestData['reason'],
-            userEmail: requestData['userEmail'] ?? '',
-            userName: requestData['userName'],
-            eventName: requestData['eventName'],
-            boothName: requestData['boothName'],
-            createdAt: requestData['createdAt'] != null
-                ? (requestData['createdAt'] as Timestamp).toDate()
-                : null,
-            updatedAt: requestData['updatedAt'] != null
-                ? (requestData['updatedAt'] as Timestamp).toDate()
-                : null,
-          );
+        // Extract addons map
+        final Map<String, dynamic> addons =
+            requestData['addons'] is Map<String, dynamic>
+            ? requestData['addons'] as Map<String, dynamic>
+            : {};
 
-          // If eventName is not in request, fetch it from events collection
-          if (request.eventName == null && request.eventId.isNotEmpty) {
-            try {
-              final eventDoc = await _firestore
-                  .collection('events')
-                  .doc(request.eventId)
-                  .get();
-
-              if (eventDoc.exists) {
-                request = request.copyWith(
-                  eventName: eventDoc.data()?['eventName'] ?? 'Unknown Event',
-                );
-              }
-            } catch (e) {
-              log('Error fetching event name: $e');
-            }
-          }
-
-          // If boothName is not in request, fetch it from booth collection
-          if (request.boothName == null &&
-              request.eventId.isNotEmpty &&
-              request.boothId.isNotEmpty) {
-            try {
-              final boothDoc = await _firestore
-                  .collection('events')
-                  .doc(request.eventId)
-                  .collection('booth')
-                  .doc(request.boothId)
-                  .get();
-
-              if (boothDoc.exists) {
-                request = request.copyWith(
-                  boothName: boothDoc.data()?['boothName'] ?? 'Unknown Booth',
-                );
-              }
-            } catch (e) {
-              log('Error fetching booth name: $e');
-            }
-          }
-
-          // If userName is not in request, fetch it from users collection
-          if (request.userName == null && request.userEmail.isNotEmpty) {
-            try {
-              final usersSnapshot = await _firestore
-                  .collection('users')
-                  .where('email', isEqualTo: request.userEmail)
-                  .limit(1)
-                  .get();
-
-              if (usersSnapshot.docs.isNotEmpty) {
-                final userData = usersSnapshot.docs.first.data();
-                final firstName = userData['firstName'] ?? '';
-                final lastName = userData['lastName'] ?? '';
-                final userName = '$firstName $lastName'.trim();
-                if (userName.isNotEmpty) {
-                  request = request.copyWith(userName: userName);
-                }
-              }
-            } catch (e) {
-              log('Error fetching user name: $e');
-            }
-          }
-
-          return request;
-        }).toList(),
-      );
+        // Create Request model from document data
+        return Request(
+          id: requestDoc.id,
+          boothId: requestData['boothId'] ?? '',
+          boothName: requestData['boothName'] ?? '',
+          companyName: requestData['companyName'] ?? '',
+          companyEmail: requestData['companyEmail'] ?? '',
+          companyDesc: requestData['companyDesc'] ?? '',
+          exhibitProfile: requestData['exhibitProfile'] ?? '',
+          eventId: requestData['eventId'] ?? '',
+          eventTitle: requestData['eventTitle'] ?? '',
+          startDate: requestData['startDate'] ?? '',
+          endDate: requestData['endDate'] ?? '',
+          status: requestData['status'] ?? 'pending',
+          reason: requestData['reason'],
+          createdAt: requestData['createdAt'] != null
+              ? (requestData['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          extendedWifi: addons['extendedWifi'] ?? false,
+          extraFurniture: addons['extraFurniture'] ?? false,
+          promoSpots: addons['promoSpots'] ?? false,
+        );
+      }).toList();
 
       return requests;
     } catch (e) {
@@ -203,8 +172,7 @@ class OrganizerService {
       final requests = await getAllRequests();
       return requests
           .where(
-            (request) =>
-                request.requestStatus.toLowerCase() == status.toLowerCase(),
+            (request) => request.status.toLowerCase() == status.toLowerCase(),
           )
           .toList();
     } catch (e) {
@@ -223,6 +191,11 @@ class OrganizerService {
     return getRequestsByStatus('approved');
   }
 
+  // Get rejected requests only
+  Future<List<Request>> getRejectedRequests() async {
+    return getRequestsByStatus('rejected');
+  }
+
   // Update request status
   Future<void> updateRequestStatus({
     required String requestId,
@@ -232,11 +205,15 @@ class OrganizerService {
     String? reason,
   }) async {
     try {
-      await _firestore.collection('requests').doc(requestId).update({
-        'requestStatus': status,
-        'reason': reason,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      final updateData = {
+        'status': status,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      };
+
+      await _firestore
+          .collection(_requestsCollection)
+          .doc(requestId)
+          .update(updateData);
 
       // If request is approved, update booth status to booked
       if (status.toLowerCase() == 'approved' &&
@@ -247,11 +224,7 @@ class OrganizerService {
             .doc(eventId)
             .collection('booth')
             .doc(boothId)
-            .update({
-              'boothStatus': 'Booked',
-              'boothAvailability': false,
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
+            .update({'boothStatus': 'Booked', 'boothAvailability': false});
       }
 
       // If request is rejected, update booth status back to available
@@ -263,11 +236,7 @@ class OrganizerService {
             .doc(eventId)
             .collection('booth')
             .doc(boothId)
-            .update({
-              'boothStatus': 'Available',
-              'boothAvailability': true,
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
+            .update({'boothStatus': 'Available', 'boothAvailability': true});
       }
     } catch (e) {
       log('Error updating request status: $e');
@@ -278,9 +247,40 @@ class OrganizerService {
   // Get request by ID
   Future<Request?> getRequestById(String requestId) async {
     try {
-      final doc = await _firestore.collection('requests').doc(requestId).get();
+      final doc = await _firestore
+          .collection(_requestsCollection)
+          .doc(requestId)
+          .get();
       if (doc.exists) {
-        return Request.fromFirestore(doc);
+        final requestData = doc.data() as Map<String, dynamic>;
+
+        // Extract addons map
+        final Map<String, dynamic> addons =
+            requestData['addons'] is Map<String, dynamic>
+            ? requestData['addons'] as Map<String, dynamic>
+            : {};
+
+        return Request(
+          id: doc.id,
+          boothId: requestData['boothId'] ?? '',
+          boothName: requestData['boothName'] ?? '',
+          companyName: requestData['companyName'] ?? '',
+          companyEmail: requestData['companyEmail'] ?? '',
+          companyDesc: requestData['companyDesc'] ?? '',
+          exhibitProfile: requestData['exhibitProfile'] ?? '',
+          eventId: requestData['eventId'] ?? '',
+          eventTitle: requestData['eventTitle'] ?? '',
+          startDate: requestData['startDate'] ?? '',
+          endDate: requestData['endDate'] ?? '',
+          status: requestData['status'] ?? 'pending',
+          reason: requestData['reason'],
+          createdAt: requestData['createdAt'] != null
+              ? (requestData['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          extendedWifi: addons['extendedWifi'] ?? false,
+          extraFurniture: addons['extraFurniture'] ?? false,
+          promoSpots: addons['promoSpots'] ?? false,
+        );
       }
       return null;
     } catch (e) {
@@ -289,27 +289,44 @@ class OrganizerService {
     }
   }
 
-  // Create a request
+  // Create a request (for exhibitor to apply for booth)
   Future<String?> createRequest({
     required String boothId,
+    required String boothName,
     required String eventId,
-    required String userEmail,
-    String requestStatus = 'pending',
-    String? userName,
-    String? eventName,
-    String? boothName,
+    required String eventTitle,
+    required String companyName,
+    required String companyEmail,
+    required String companyDesc,
+    required String exhibitProfile,
+    required String startDate,
+    required String endDate,
+    bool extendedWifi = false,
+    bool extraFurniture = false,
+    bool promoSpots = false,
+    String status = 'pending',
+    String? reason,
   }) async {
     try {
-      final docRef = await _firestore.collection('requests').add({
+      final docRef = await _firestore.collection(_requestsCollection).add({
         'boothId': boothId,
+        'boothName': boothName,
         'eventId': eventId,
-        'userEmail': userEmail,
-        'requestStatus': requestStatus,
-        if (userName != null) 'userName': userName,
-        if (eventName != null) 'eventName': eventName,
-        if (boothName != null) 'boothName': boothName,
+        'eventTitle': eventTitle,
+        'companyName': companyName,
+        'companyEmail': companyEmail,
+        'companyDesc': companyDesc,
+        'exhibitProfile': exhibitProfile,
+        'startDate': startDate,
+        'endDate': endDate,
+        'status': status,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
         'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
+        'addons': {
+          'extendedWifi': extendedWifi,
+          'extraFurniture': extraFurniture,
+          'promoSpots': promoSpots,
+        },
       });
 
       return docRef.id;
@@ -322,32 +339,87 @@ class OrganizerService {
   // Stream for real-time requests updates
   Stream<List<Request>> getRequestsStream() {
     return _firestore
-        .collection('requests')
+        .collection(_requestsCollection)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .asyncMap((snapshot) async {
-          final requests = await Future.wait(
-            snapshot.docs.map((doc) async {
-              final request = Request.fromFirestore(doc);
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final requestData = doc.data();
 
-              // Fetch additional details if needed
-              if (request.eventName == null && request.eventId.isNotEmpty) {
-                final eventDoc = await _firestore
-                    .collection('events')
-                    .doc(request.eventId)
-                    .get();
-                if (eventDoc.exists) {
-                  return request.copyWith(
-                    eventName: eventDoc.data()?['eventName'] ?? 'Unknown Event',
-                  );
-                }
-              }
+            // Extract addons map
+            final Map<String, dynamic> addons =
+                requestData['addons'] is Map<String, dynamic>
+                ? requestData['addons'] as Map<String, dynamic>
+                : {};
 
-              return request;
-            }).toList(),
-          );
-
-          return requests;
+            return Request(
+              id: doc.id,
+              boothId: requestData['boothId'] ?? '',
+              boothName: requestData['boothName'] ?? '',
+              companyName: requestData['companyName'] ?? '',
+              companyEmail: requestData['companyEmail'] ?? '',
+              companyDesc: requestData['companyDesc'] ?? '',
+              exhibitProfile: requestData['exhibitProfile'] ?? '',
+              eventId: requestData['eventId'] ?? '',
+              eventTitle: requestData['eventTitle'] ?? '',
+              startDate: requestData['startDate'] ?? '',
+              endDate: requestData['endDate'] ?? '',
+              status: requestData['status'] ?? 'pending',
+              reason: requestData['reason'],
+              createdAt: requestData['createdAt'] != null
+                  ? (requestData['createdAt'] as Timestamp).toDate()
+                  : DateTime.now(),
+              extendedWifi: addons['extendedWifi'] ?? false,
+              extraFurniture: addons['extraFurniture'] ?? false,
+              promoSpots: addons['promoSpots'] ?? false,
+            );
+          }).toList();
         });
+  }
+
+  // Get requests by company email
+  Future<List<Request>> getRequestsByCompanyEmail(String companyEmail) async {
+    try {
+      final requestsSnapshot = await _firestore
+          .collection(_requestsCollection)
+          .where('companyEmail', isEqualTo: companyEmail)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return requestsSnapshot.docs.map((doc) {
+        final requestData = doc.data();
+
+        // Extract addons map
+        final Map<String, dynamic> addons =
+            requestData['addons'] is Map<String, dynamic>
+            ? requestData['addons'] as Map<String, dynamic>
+            : {};
+
+        return Request(
+          id: doc.id,
+          boothId: requestData['boothId'] ?? '',
+          boothName: requestData['boothName'] ?? '',
+          companyName: requestData['companyName'] ?? '',
+          companyEmail: requestData['companyEmail'] ?? '',
+          companyDesc: requestData['companyDesc'] ?? '',
+          exhibitProfile: requestData['exhibitProfile'] ?? '',
+          eventId: requestData['eventId'] ?? '',
+          eventTitle: requestData['eventTitle'] ?? '',
+          startDate: requestData['startDate'] ?? '',
+          endDate: requestData['endDate'] ?? '',
+          status: requestData['status'] ?? 'pending',
+          reason: requestData['reason'],
+          createdAt: requestData['createdAt'] != null
+              ? (requestData['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          extendedWifi: addons['extendedWifi'] ?? false,
+          extraFurniture: addons['extraFurniture'] ?? false,
+          promoSpots: addons['promoSpots'] ?? false,
+        );
+      }).toList();
+    } catch (e) {
+      log('Error getting requests by company email: $e');
+      return [];
+    }
   }
 }

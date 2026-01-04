@@ -196,7 +196,6 @@ class _LoginPageState extends State<LoginPage> {
   //   print('Last Name: ${lastNameController.text}');
   //   print('DOB: ${dobController.text}');
   //   print('Phone: ${phoneController.text}');
-
   //   // storing additional user data:
   //    await FirebaseFirestore.instance
   //      .collection('users')

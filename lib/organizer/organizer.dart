@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:exhibition_project_new_version/Guest.dart';
 import 'package:exhibition_project_new_version/organizer/create_event_page.dart';
 import 'package:exhibition_project_new_version/organizer/event_list_page.dart';
 import 'package:exhibition_project_new_version/organizer/model/event_model.dart';
@@ -7,7 +8,6 @@ import 'package:exhibition_project_new_version/organizer/model/request_model.dar
 import 'package:exhibition_project_new_version/organizer/request_list_page.dart';
 import 'package:exhibition_project_new_version/services/organizer_service.dart';
 import 'package:flutter/material.dart';
-import '../Login.dart';
 import '../UserHome.dart';
 
 // --- THEME CONSTANTS ---
@@ -55,7 +55,7 @@ class _OrganizerPageState extends State<OrganizerPage> {
       // Log requests for debugging
       for (final request in fetchedRequests) {
         log(
-          'Request: ${request.eventName} - ${request.boothName} - ${request.userName} - ${request.requestStatus}',
+          'Request: ${request.eventTitle} - ${request.boothName} - ${request.companyName} - ${request.status}',
         );
       }
 
@@ -489,7 +489,7 @@ class _OrganizerPageState extends State<OrganizerPage> {
             ),
           ),
           title: Text(
-            request.eventName ?? '',
+            request.eventTitle,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
@@ -539,16 +539,19 @@ class _OrganizerPageState extends State<OrganizerPage> {
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (context) => const HomePage())),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const HomePage(isFromOrganizer: true),
+              ),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Logout', style: TextStyle(color: Colors.red)),
-            onTap: () => Navigator.of(
+            onTap: () => Navigator.pushReplacement(
               context,
-            ).push(MaterialPageRoute(builder: (context) => const LoginPage())),
+              MaterialPageRoute(builder: (context) => const GuestPage()),
+            ),
           ),
         ],
       ),

@@ -3,91 +3,154 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Request {
   final String id;
   final String boothId;
+  final String boothName;
+  final String companyName;
+  final String companyEmail;
+  final String companyDesc;
+  final String exhibitProfile;
   final String eventId;
-  final String requestStatus;
+  final String eventTitle;
+  final String startDate;
+  final String endDate;
+  final String status;
   final String? reason;
-  final String userEmail;
-  final String? userName;
-  final String? eventName;
-  final String? boothName;
-  final DateTime? createdAt;
+  final DateTime createdAt;
   final DateTime? updatedAt;
+  final bool extendedWifi;
+  final bool extraFurniture;
+  final bool promoSpots;
 
   Request({
     required this.id,
     required this.boothId,
+    required this.boothName,
+    required this.companyName,
+    required this.companyEmail,
+    required this.companyDesc,
+    required this.exhibitProfile,
     required this.eventId,
-    required this.requestStatus,
-    required this.userEmail,
+    required this.eventTitle,
+    required this.startDate,
+    required this.endDate,
+    required this.status,
+    required this.createdAt,
+    required this.extendedWifi,
+    required this.extraFurniture,
+    required this.promoSpots,
     this.reason,
-    this.userName,
-    this.eventName,
-    this.boothName,
-    this.createdAt,
     this.updatedAt,
   });
 
   // Factory constructor to create Request from Firestore document
   factory Request.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    // Handle addons map
+    final Map<String, dynamic> addons = data['addons'] is Map<String, dynamic>
+        ? data['addons'] as Map<String, dynamic>
+        : {};
+
+    // Parse timestamp to DateTime
+    DateTime parseTimestamp(dynamic timestamp) {
+      if (timestamp == null) return DateTime.now();
+      if (timestamp is Timestamp) return timestamp.toDate();
+      if (timestamp is String) {
+        try {
+          return DateTime.parse(timestamp);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      return DateTime.now();
+    }
+
     return Request(
       id: doc.id,
       boothId: data['boothId'] ?? '',
+      boothName: data['boothName'] ?? '',
+      companyName: data['companyName'] ?? '',
+      companyEmail: data['companyEmail'] ?? '',
+      companyDesc: data['companyDesc'] ?? '',
+      exhibitProfile: data['exhibitProfile'] ?? '',
       eventId: data['eventId'] ?? '',
-      requestStatus: data['requestStatus'] ?? 'pending',
+      eventTitle: data['eventTitle'] ?? '',
+      startDate: data['startDate'] ?? '',
+      endDate: data['endDate'] ?? '',
+      status: data['status'] ?? 'pending',
       reason: data['reason'],
-      userEmail: data['userEmail'] ?? '',
-      userName: data['userName'],
-      eventName: data['eventName'],
-      boothName: data['boothName'],
-      createdAt: data['createdAt'] != null
-          ? (data['createdAt'] as Timestamp).toDate()
-          : null,
-      updatedAt: data['updatedAt'] != null
-          ? (data['updatedAt'] as Timestamp).toDate()
-          : null,
+      createdAt: parseTimestamp(data['createdAt']),
+      updatedAt: parseTimestamp(data['updatedAt']),
+      extendedWifi: addons['extendedWifi'] ?? false,
+      extraFurniture: addons['extraFurniture'] ?? false,
+      promoSpots: addons['promoSpots'] ?? false,
     );
   }
 
   // Factory constructor to create Request from Map
   factory Request.fromMap(Map<String, dynamic> map) {
+    // Handle addons map
+    final Map<String, dynamic> addons = map['addons'] is Map<String, dynamic>
+        ? map['addons'] as Map<String, dynamic>
+        : {};
+
+    // Parse timestamp to DateTime
+    DateTime parseTimestamp(dynamic timestamp) {
+      if (timestamp == null) return DateTime.now();
+      if (timestamp is Timestamp) return timestamp.toDate();
+      if (timestamp is String) {
+        try {
+          return DateTime.parse(timestamp);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      return DateTime.now();
+    }
+
     return Request(
       id: map['id'] ?? '',
       boothId: map['boothId'] ?? '',
+      boothName: map['boothName'] ?? '',
+      companyName: map['companyName'] ?? '',
+      companyEmail: map['companyEmail'] ?? '',
+      companyDesc: map['companyDesc'] ?? '',
+      exhibitProfile: map['exhibitProfile'] ?? '',
       eventId: map['eventId'] ?? '',
-      requestStatus: map['requestStatus'] ?? 'pending',
+      eventTitle: map['eventTitle'] ?? '',
+      startDate: map['startDate'] ?? '',
+      endDate: map['endDate'] ?? '',
+      status: map['status'] ?? 'pending',
       reason: map['reason'],
-      userEmail: map['userEmail'] ?? '',
-      userName: map['userName'],
-      eventName: map['eventName'],
-      boothName: map['boothName'],
-      createdAt: map['createdAt'] != null
-          ? (map['createdAt'] is Timestamp
-                ? (map['createdAt'] as Timestamp).toDate()
-                : DateTime.parse(map['createdAt'].toString()))
-          : null,
-      updatedAt: map['updatedAt'] != null
-          ? (map['updatedAt'] is Timestamp
-                ? (map['updatedAt'] as Timestamp).toDate()
-                : DateTime.parse(map['updatedAt'].toString()))
-          : null,
+      createdAt: parseTimestamp(map['createdAt']),
+      updatedAt: parseTimestamp(map['updatedAt']),
+      extendedWifi: addons['extendedWifi'] ?? false,
+      extraFurniture: addons['extraFurniture'] ?? false,
+      promoSpots: addons['promoSpots'] ?? false,
     );
   }
 
-  // Convert to Map
+  // Convert to Map (for Firestore)
   Map<String, dynamic> toMap() {
     return {
       'boothId': boothId,
+      'boothName': boothName,
+      'companyName': companyName,
+      'companyEmail': companyEmail,
+      'companyDesc': companyDesc,
+      'exhibitProfile': exhibitProfile,
       'eventId': eventId,
-      'requestStatus': requestStatus,
-
-      'userEmail': userEmail,
-      if (reason != null) 'reason': reason,
-      if (userName != null) 'userName': userName,
-      if (eventName != null) 'eventName': eventName,
-      if (boothName != null) 'boothName': boothName,
-      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
-      if (updatedAt != null) 'updatedAt': Timestamp.fromDate(updatedAt!),
+      'eventTitle': eventTitle,
+      'startDate': startDate,
+      'endDate': endDate,
+      'status': status,
+      'reason': reason,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+      'addons': {
+        'extendedWifi': extendedWifi,
+        'extraFurniture': extraFurniture,
+        'promoSpots': promoSpots,
+      },
     };
   }
 
@@ -98,38 +161,72 @@ class Request {
   Request copyWith({
     String? id,
     String? boothId,
-    String? eventId,
-    String? requestStatus,
-    String? reason,
-    String? userEmail,
-    String? userName,
-    String? eventName,
     String? boothName,
+    String? companyName,
+    String? companyEmail,
+    String? companyDesc,
+    String? exhibitProfile,
+    String? eventId,
+    String? eventTitle,
+    String? startDate,
+    String? endDate,
+    String? status,
+    String? reason,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? extendedWifi,
+    bool? extraFurniture,
+    bool? promoSpots,
   }) {
     return Request(
       id: id ?? this.id,
       boothId: boothId ?? this.boothId,
-      eventId: eventId ?? this.eventId,
-      requestStatus: requestStatus ?? this.requestStatus,
-      reason: reason ?? this.reason,
-      userEmail: userEmail ?? this.userEmail,
-      userName: userName ?? this.userName,
-      eventName: eventName ?? this.eventName,
       boothName: boothName ?? this.boothName,
+      companyName: companyName ?? this.companyName,
+      companyEmail: companyEmail ?? this.companyEmail,
+      companyDesc: companyDesc ?? this.companyDesc,
+      exhibitProfile: exhibitProfile ?? this.exhibitProfile,
+      eventId: eventId ?? this.eventId,
+      eventTitle: eventTitle ?? this.eventTitle,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      status: status ?? this.status,
+      reason: reason ?? this.reason,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      extendedWifi: extendedWifi ?? this.extendedWifi,
+      extraFurniture: extraFurniture ?? this.extraFurniture,
+      promoSpots: promoSpots ?? this.promoSpots,
     );
   }
 
-  // Helper getter
-  bool get isPending => requestStatus.toLowerCase() == 'pending';
-  bool get isApproved => requestStatus.toLowerCase() == 'approved';
-  bool get isRejected => requestStatus.toLowerCase() == 'rejected';
+  // Helper getters
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isApproved => status.toLowerCase() == 'approved';
+  bool get isRejected => status.toLowerCase() == 'rejected';
+
+  // Format date for display
+  String get formattedCreatedAt {
+    return '${createdAt.day}/${createdAt.month}/${createdAt.year}';
+  }
+
+  // Format date range
+  String get dateRange {
+    return '$startDate - $endDate';
+  }
+
+  // Get addons list as string
+  String get addonsList {
+    List<String> selectedAddons = [];
+    if (extendedWifi) selectedAddons.add('Extended WiFi');
+    if (extraFurniture) selectedAddons.add('Extra Furniture');
+    if (promoSpots) selectedAddons.add('Promo Spots');
+
+    return selectedAddons.isEmpty ? 'None' : selectedAddons.join(', ');
+  }
 
   @override
   String toString() {
-    return 'Request(id: $id, status: $requestStatus, user: $userEmail, booth: $boothId, event: $eventId)';
+    return 'Request(id: $id, status: $status, company: $companyName, booth: $boothName, event: $eventTitle)';
   }
 }

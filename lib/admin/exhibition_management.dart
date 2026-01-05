@@ -64,7 +64,7 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: status,
+                initialValue: status,
                 items: const [
                   DropdownMenuItem(value: 'Upcoming', child: Text('Upcoming')),
                   DropdownMenuItem(value: 'Active', child: Text('Active')),
@@ -144,7 +144,7 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exhibition Management'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),

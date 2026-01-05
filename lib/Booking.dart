@@ -12,9 +12,8 @@ class BookingPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         toolbarHeight: 69,
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         title: const Text('Berjaya Convention'),
-
       ),
       drawer: Drawer(
         child: Container(
@@ -22,16 +21,15 @@ class BookingPage extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              SizedBox(height: 100,
-              child:
-              DrawerHeader(
-
-                decoration: BoxDecoration(color: Colors.blueGrey.shade500),
-                child: const Text(
-                  'Explore More Our Service',
-                  style: TextStyle(color: Colors.white),
+              SizedBox(
+                height: 100,
+                child: DrawerHeader(
+                  decoration: BoxDecoration(color: Colors.blueGrey.shade500),
+                  child: const Text(
+                    'Explore More Our Service',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
               ),
               ListTile(
                 leading: const Icon(Icons.home),
@@ -39,7 +37,7 @@ class BookingPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => HomePage()),
+                    MaterialPageRoute(builder: (_) => const HomePage()),
                   );
                 },
               ),
@@ -48,9 +46,9 @@ class BookingPage extends StatelessWidget {
                 leading: const Icon(Icons.emoji_events),
                 title: const Text('Exhibition'),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => Exhibition()),
-                  );
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const Exhibition()));
                 },
               ),
             ],
@@ -58,11 +56,11 @@ class BookingPage extends StatelessWidget {
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Select Exhibition:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -106,54 +104,326 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
 
   final Map<String, List<Map<String, String>>> eventBooths = {
     'Malaysia Brand Day 2026': [
-      {'id': '1', 'status': 'Booked', 'size': '3x3', 'price': 'RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '2', 'status': 'Available', 'size': '3x3', 'price': 'RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '3', 'status': 'Booked', 'size': '4x4', 'price': 'RM4000' , 'amenities': 'Power, WiFi'},
-      {'id': '4', 'status': 'Available', 'size': '4x4', 'price': 'RM4000', 'amenities': 'Power, WiFi'},
-      {'id': '5', 'status': 'Available', 'size': '4x4', 'price': 'RM4000', 'amenities': 'Power, WiFi'},
-      {'id': '6', 'status': 'Booked', 'size': '4x4', 'price': 'RM4000', 'amenities': 'Power, WiFi'},
-      {'id': '7', 'status': 'Available', 'size': '4x4', 'price': 'RM4000', 'amenities': 'Power, WiFi'},
-      {'id': '8', 'status': 'Booked', 'size': '4x4', 'price': 'RM4000', 'amenities': 'Power, WiFi'},
+      {
+        'id': '1',
+        'status': 'Booked',
+        'size': '3x3',
+        'price': 'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '2',
+        'status': 'Available',
+        'size': '3x3',
+        'price': 'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '3',
+        'status': 'Booked',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '4',
+        'status': 'Available',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '5',
+        'status': 'Available',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '6',
+        'status': 'Booked',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '7',
+        'status': 'Available',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '8',
+        'status': 'Booked',
+        'size': '4x4',
+        'price': 'RM4000',
+        'amenities': 'Power, WiFi',
+      },
     ],
     'Comic Fiesta 2026': [
-      {'id': '1', 'status': 'Booked', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '2', 'status': 'Available', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '3', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '4', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '5', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '6', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '7', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '8', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
+      {
+        'id': '1',
+        'status': 'Booked',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '2',
+        'status': 'Available',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '3',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '4',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '5',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '6',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '7',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '8',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
     ],
     'International Automodified 2026': [
-      {'id': '1', 'status': 'Booked', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '2', 'status': 'Available', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '3', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '4', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '5', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '6', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '7', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '8', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
+      {
+        'id': '1',
+        'status': 'Booked',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '2',
+        'status': 'Available',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '3',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '4',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '5',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '6',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '7',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '8',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
     ],
     'Healthcare Innovation': [
-      {'id': '1', 'status': 'Booked', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '2', 'status': 'Available', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '3', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '4', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '5', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '6', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '7', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '8', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
+      {
+        'id': '1',
+        'status': 'Booked',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '2',
+        'status': 'Available',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '3',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '4',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '5',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '6',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '7',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '8',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
     ],
     'CyberSecurity Talk': [
-      {'id': '1', 'status': 'Booked', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '2', 'status': 'Booked', 'size': '3x3''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '3', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '4', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '5', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '6', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '7', 'status': 'Available', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
-      {'id': '8', 'status': 'Booked', 'size': '4x4''RM3000', 'amenities': 'Power, WiFi'},
+      {
+        'id': '1',
+        'status': 'Booked',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '2',
+        'status': 'Booked',
+        'size':
+            '3x3'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '3',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '4',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '5',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '6',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '7',
+        'status': 'Available',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
+      {
+        'id': '8',
+        'status': 'Booked',
+        'size':
+            '4x4'
+            'RM3000',
+        'amenities': 'Power, WiFi',
+      },
     ],
 
     // Add other events similarly...
@@ -170,10 +440,7 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
           hint: const Text('Choose an exhibition'),
           value: selectedEvent,
           items: Exhibition.events.map((event) {
-            return DropdownMenuItem(
-              value: event,
-              child: Text(event['title']!),
-            );
+            return DropdownMenuItem(value: event, child: Text(event['title']!));
           }).toList(),
           onChanged: (value) {
             setState(() {
@@ -203,7 +470,9 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                   Text(
                     selectedEvent!['title']!,
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(selectedEvent!['desc']!),
@@ -219,8 +488,8 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 🚪 ENTRY
-                      Column(
-                        children: const [
+                      const Column(
+                        children: [
                           Icon(Icons.door_front_door, size: 36),
                           Text('Entry', style: TextStyle(fontSize: 12)),
                         ],
@@ -244,10 +513,13 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                               children: [
                                 _buildBooth('5'),
                                 _buildBooth('6'),
-                                Column(
-                                  children: const [
+                                const Column(
+                                  children: [
                                     Icon(Icons.wc, size: 30),
-                                    Text('Toilet', style: TextStyle(fontSize: 10)),
+                                    Text(
+                                      'Toilet',
+                                      style: TextStyle(fontSize: 10),
+                                    ),
                                   ],
                                 ),
                                 _buildBooth('7'),
@@ -305,7 +577,8 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                   labelText: 'Company Name',
                                   border: OutlineInputBorder(),
                                 ),
-                                validator: (v) => v!.isEmpty ? 'Required' : null,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Required' : null,
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
@@ -313,7 +586,8 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                   labelText: 'Company Description',
                                   border: OutlineInputBorder(),
                                 ),
-                                validator: (v) => v!.isEmpty ? 'Required' : null,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Required' : null,
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
@@ -321,7 +595,8 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                   labelText: 'Exhibit Profile',
                                   border: OutlineInputBorder(),
                                 ),
-                                validator: (v) => v!.isEmpty ? 'Required' : null,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Required' : null,
                               ),
 
                               const SizedBox(height: 8),
@@ -343,11 +618,12 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                   if (picked != null) {
                                     setState(() {
                                       startDateController.text =
-                                      "${picked.day}/${picked.month}/${picked.year}";
+                                          "${picked.day}/${picked.month}/${picked.year}";
                                     });
                                   }
                                 },
-                                validator: (v) => v!.isEmpty ? 'Required' : null,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Required' : null,
                               ),
                               const SizedBox(height: 8),
                               // Event End Date with Calendar
@@ -368,11 +644,12 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                   if (picked != null) {
                                     setState(() {
                                       endDateController.text =
-                                      "${picked.day}/${picked.month}/${picked.year}";
+                                          "${picked.day}/${picked.month}/${picked.year}";
                                     });
                                   }
                                 },
-                                validator: (v) => v!.isEmpty ? 'Required' : null,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Required' : null,
                               ),
 
                               const SizedBox(height: 12),
@@ -412,9 +689,12 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                                     showDialog(
                                       context: context,
                                       builder: (_) => AlertDialog(
-                                        title: const Text('Application Submitted'),
+                                        title: const Text(
+                                          'Application Submitted',
+                                        ),
                                         content: const Text(
-                                            'Your booth application is now Pending Review!'),
+                                          'Your booth application is now Pending Review!',
+                                        ),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>
@@ -459,7 +739,7 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
   // Booth Widget
   Widget _buildBooth(String boothId) {
     final booth = currentBooths.firstWhere(
-          (b) => b['id'] == boothId,
+      (b) => b['id'] == boothId,
       orElse: () => {'status': 'Unavailable'},
     );
 
@@ -475,12 +755,12 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
     return GestureDetector(
       onTap: booth['status'] == 'Available'
           ? () {
-        setState(() {
-          selectedBooth = boothId;
-          showBoothDetails = false;
-          showPendingMessage = false;
-        });
-      }
+              setState(() {
+                selectedBooth = boothId;
+                showBoothDetails = false;
+                showPendingMessage = false;
+              });
+            }
           : null,
       child: Container(
         width: 60,

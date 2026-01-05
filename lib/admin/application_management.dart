@@ -58,7 +58,7 @@ class _ApplicationManagementPageState
               TextField(controller: boothController, decoration: const InputDecoration(labelText: 'Booth')),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: status,
+                initialValue: status,
                 items: const [
                   DropdownMenuItem(value: 'Pending', child: Text('Pending')),
                   DropdownMenuItem(value: 'Approved', child: Text('Approved')),
@@ -171,7 +171,7 @@ class _ApplicationManagementPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Application Management'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),

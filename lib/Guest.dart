@@ -10,7 +10,7 @@ class GuestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: Scaffold(
+    return Scaffold(
       appBar:AppBar(
         toolbarHeight: 69,
         backgroundColor: Colors.blueGrey,
@@ -237,7 +237,7 @@ class GuestPage extends StatelessWidget {
         ),
 
       ),
-    ));
+    );
   }
 }
 

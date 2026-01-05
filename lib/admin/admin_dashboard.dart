@@ -19,7 +19,7 @@ class AdminDashboardPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Admin Dashboard'),
-          backgroundColor: Colors.blueGrey,
+          backgroundColor: Colors.blueAccent,
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -58,7 +58,7 @@ class AdminDashboardPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ExhibitionManagementPage(),
+                          builder: (context) => const ExhibitionManagementPage(),
                         ),
                       ),
                     ),
@@ -68,7 +68,7 @@ class AdminDashboardPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FloorPlanManagementPage(),
+                          builder: (context) => const FloorPlanManagementPage(),
                         ),
                       ),
                     ),
@@ -78,7 +78,7 @@ class AdminDashboardPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UserManagementPage(),
+                          builder: (context) => const UserManagementPage(),
                         ),
                       ),
                     ),
@@ -88,7 +88,7 @@ class AdminDashboardPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ApplicationManagementPage(),
+                          builder: (context) => const ApplicationManagementPage(),
                         ),
                       ),
                     ),

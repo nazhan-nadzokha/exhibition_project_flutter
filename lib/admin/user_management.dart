@@ -9,17 +9,34 @@ class UserManagementPage extends StatefulWidget {
 
 class _UserManagementPageState extends State<UserManagementPage> {
   List<Map<String, String>> users = [
-    {'id': 'U001', 'name': 'Admin One', 'email': 'admin@berjaya.com', 'role': 'Admin'},
-    {'id': 'U002', 'name': 'Siti Aminah', 'email': 'siti@event.com', 'role': 'Organizer'},
-    {'id': 'U003', 'name': 'Ali Hassan', 'email': 'ali@expo.com', 'role': 'Exhibitor'},
+    {
+      'id': 'U001',
+      'name': 'Admin One',
+      'email': 'admin@berjaya.com',
+      'role': 'Admin',
+    },
+    {
+      'id': 'U002',
+      'name': 'Siti Aminah',
+      'email': 'siti@event.com',
+      'role': 'Organizer',
+    },
+    {
+      'id': 'U003',
+      'name': 'Ali Hassan',
+      'email': 'ali@expo.com',
+      'role': 'Exhibitor',
+    },
   ];
 
   void _addOrEditUser({int? index}) {
     final isEdit = index != null;
-    final TextEditingController nameController =
-    TextEditingController(text: isEdit ? users[index]['name'] : '');
-    final TextEditingController emailController =
-    TextEditingController(text: isEdit ? users[index]['email'] : '');
+    final TextEditingController nameController = TextEditingController(
+      text: isEdit ? users[index]['name'] : '',
+    );
+    final TextEditingController emailController = TextEditingController(
+      text: isEdit ? users[index]['email'] : '',
+    );
     String role = isEdit ? users[index]['role']! : 'Exhibitor';
 
     showDialog(
@@ -42,8 +59,14 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 initialValue: role,
                 items: const [
                   DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-                  DropdownMenuItem(value: 'Organizer', child: Text('Organizer')),
-                  DropdownMenuItem(value: 'Exhibitor', child: Text('Exhibitor')),
+                  DropdownMenuItem(
+                    value: 'Organizer',
+                    child: Text('Organizer'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Exhibitor',
+                    child: Text('Exhibitor'),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) role = val;
@@ -54,7 +77,10 @@ class _UserManagementPageState extends State<UserManagementPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -66,7 +92,8 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     'role': role,
                   };
                 } else {
-                  final newId = 'U${(users.length + 1).toString().padLeft(3, '0')}';
+                  final newId =
+                      'U${(users.length + 1).toString().padLeft(3, '0')}';
                   users.add({
                     'id': newId,
                     'name': nameController.text,
@@ -77,7 +104,13 @@ class _UserManagementPageState extends State<UserManagementPage> {
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isEdit ? 'User updated successfully' : 'User added successfully')),
+                SnackBar(
+                  content: Text(
+                    isEdit
+                        ? 'User updated successfully'
+                        : 'User added successfully',
+                  ),
+                ),
               );
             },
             child: Text(isEdit ? 'SAVE' : 'ADD'),
@@ -92,9 +125,14 @@ class _UserManagementPageState extends State<UserManagementPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete User'),
-        content: Text('Are you sure you want to delete ${users[index]['name']}?'),
+        content: Text(
+          'Are you sure you want to delete ${users[index]['name']}?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -126,7 +164,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Management'),
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -154,7 +192,10 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 children: [
                   Text(user['email']!),
                   const SizedBox(height: 4),
-                  Text('Role: ${user['role']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Role: ${user['role']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               trailing: PopupMenuButton<String>(
@@ -169,16 +210,19 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 },
                 itemBuilder: (context) => const [
                   PopupMenuItem(value: 'Admin', child: Text('Set as Admin')),
-                  PopupMenuItem(value: 'Organizer', child: Text('Set as Organizer')),
-                  PopupMenuItem(value: 'Exhibitor', child: Text('Set as Exhibitor')),
+                  PopupMenuItem(
+                    value: 'Organizer',
+                    child: Text('Set as Organizer'),
+                  ),
+                  PopupMenuItem(
+                    value: 'Exhibitor',
+                    child: Text('Set as Exhibitor'),
+                  ),
                   PopupMenuItem(
                     value: 'Delete',
                     child: Text('Delete', style: TextStyle(color: Colors.red)),
                   ),
-                  PopupMenuItem(
-                    value: 'Edit',
-                    child: Text('Edit'),
-                  ),
+                  PopupMenuItem(value: 'Edit', child: Text('Edit')),
                 ],
               ),
             ),

@@ -6,7 +6,8 @@ import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_lauche
 
 
 class GuestPage extends StatelessWidget {
-  const GuestPage({super.key});
+  final bool? isFromOrganizer;
+  const GuestPage({super.key, this.isFromOrganizer = false});
 
   @override
   Widget build(BuildContext context) {

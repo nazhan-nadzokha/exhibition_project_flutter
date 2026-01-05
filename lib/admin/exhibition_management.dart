@@ -84,7 +84,7 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
             onPressed: () {
               setState(() {
                 if (isEdit) {
-                  exhibitions[index!] = {
+                  exhibitions[index] = {
                     'id': exhibitions[index]['id']!,
                     'name': nameController.text,
                     'date': dateController.text,

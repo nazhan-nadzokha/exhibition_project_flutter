@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Login.dart';
-import 'UserHome.dart';
+import 'Guest.dart';
 
 // --- THEME CONSTANTS ---
 const Color kPrimaryColor = Color(0xFF263238); // Dark Blue Grey
@@ -203,13 +203,10 @@ class _OrganizerPageState extends State<OrganizerPage> {
             accountEmail: const Text("organizer@berjaya.com"),
             currentAccountPicture: const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person, color: kPrimaryColor)),
           ),
-          ListTile(
-            leading: const Icon(Icons.home), title: const Text('Home'),
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const HomePage())),
-          ),
+
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red), title: const Text('Logout', style: TextStyle(color: Colors.red)),
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const LoginPage())),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const GuestPage())),
           ),
         ],
       ),

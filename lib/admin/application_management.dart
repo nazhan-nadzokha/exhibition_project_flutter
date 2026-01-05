@@ -79,7 +79,7 @@ class _ApplicationManagementPageState
             onPressed: () {
               setState(() {
                 if (isEdit) {
-                  applications[index!] = {
+                  applications[index] = {
                     'id': applications[index]['id']!,
                     'company': companyController.text,
                     'booth': boothController.text,

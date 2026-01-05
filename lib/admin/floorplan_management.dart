@@ -63,7 +63,7 @@ class _FloorPlanManagementPageState extends State<FloorPlanManagementPage> {
             onPressed: () {
               setState(() {
                 if (isEdit) {
-                  booths[index!] = {
+                  booths[index] = {
                     'booth': boothController.text,
                     'size': sizeController.text,
                     'status': status,
@@ -196,7 +196,7 @@ class _FloorPlanManagementPageState extends State<FloorPlanManagementPage> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1.1,
+                  childAspectRatio: 1.0,
                 ),
                 itemBuilder: (context, index) {
                   final booth = booths[index];

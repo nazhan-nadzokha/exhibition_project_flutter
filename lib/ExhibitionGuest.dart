@@ -144,7 +144,7 @@ class ExhibitionGuest extends StatelessWidget {
   // =======================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(child: Scaffold(
       appBar: AppBar(
         toolbarHeight: 69,
         backgroundColor: Colors.blueGrey,
@@ -257,7 +257,7 @@ class ExhibitionGuest extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

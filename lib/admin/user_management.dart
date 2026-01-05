@@ -39,7 +39,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: role,
+                initialValue: role,
                 items: const [
                   DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                   DropdownMenuItem(value: 'Organizer', child: Text('Organizer')),
@@ -59,7 +59,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
             onPressed: () {
               setState(() {
                 if (isEdit) {
-                  users[index!] = {
+                  users[index] = {
                     'id': users[index]['id']!,
                     'name': nameController.text,
                     'email': emailController.text,

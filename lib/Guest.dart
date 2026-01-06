@@ -55,6 +55,7 @@ class GuestPage extends StatelessWidget {
                     Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const LoginPage()));
                   },
                 ),
+
               ],
             ),
           )

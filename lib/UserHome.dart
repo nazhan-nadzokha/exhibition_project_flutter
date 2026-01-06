@@ -4,6 +4,7 @@ import 'Exhibition.dart';
 import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_launcher
 import 'Booking.dart';
 import '../Profile.dart';
+import 'MyBooking.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -52,6 +53,16 @@ class HomePage extends StatelessWidget {
                   title: Text('Booking '),
                   onTap: (){
                     Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BookingPage()));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.book_online_sharp),
+                  title: const Text('My Booking'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => MyBookingsPage()),
+                    );
                   },
                 ),
               ],

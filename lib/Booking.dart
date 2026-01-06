@@ -1,3 +1,4 @@
+import 'package:exhibition_project_new_version/MyBooking.dart';
 import 'package:flutter/material.dart';
 import 'UserHome.dart';
 import 'services/firestore_service.dart';
@@ -41,6 +42,26 @@ class BookingPage extends StatelessWidget {
                   );
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.emoji_events),
+                title: const Text('Exhibitions'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => Exhibition()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.book_online_sharp),
+                title: const Text('My Booking'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MyBookingsPage()),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -68,6 +89,8 @@ class ExhibitionDropdown extends StatefulWidget {
 
 class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
   String? selectedEventId;          // Firestore document ID
+  String? selectedBoothId;
+  Map<String, dynamic>? selectedBoothData;
   Map<String, dynamic>? selectedEventData;  // event fields
   Map<String, dynamic>? selectedBooth;
   bool showBoothDetails = false;
@@ -168,6 +191,7 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                   onTap: status == 'available'
                       ? () {
                     setState(() {
+                      selectedBoothId = booth['boothId'];
                       selectedBooth = booth;
                       showBoothDetails = true;
                       showPendingMessage = false;
@@ -183,7 +207,7 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      booth['boothId'],
+                      booth['boothNumber'] ?? '',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -195,7 +219,7 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
 
               return Column(
                 children: [
-                  // ===== TOP ROW =====
+                  //
                   Row(
                     children: [
                       // Entry 1
@@ -260,7 +284,31 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
 
         // ===== Booth Details Form =====
         if (showBoothDetails && selectedBooth != null)
-          Form(
+            Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Booth Details",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Text("Booth ID: ${selectedBooth!['boothId']}"),
+                    Text("Size: ${selectedBooth!['boothSize'] ?? 'N/A'}"),
+                    Text("Price: RM ${selectedBooth!['boothPrice'] ?? '0'}"),
+                    const SizedBox(height: 6),
+                    const Text("Amenities:", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Amenities: ${selectedBooth!['boothAmenities'] ?? 'No amenities'}",
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        if (showBoothDetails && selectedBooth != null)
+        Form(
             key: _formKey,
             child: Column(
               children: [
@@ -370,7 +418,8 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
                         selectedBooth != null) {
                       await _fs.submitBoothApplication(
                         eventId: selectedEventId!,
-                        eventTitle: selectedEventData!['title'] ?? '',
+                        eventTitle: selectedEventData!['eventName'] ?? '',
+                        boothNumber: selectedBooth!['boothNumber'] ?? '',
                         boothId: selectedBooth!['boothId'] ?? '',
                         companyName: companyNameCtrl.text,
                         companyEmail: companyEmailCtrl.text,
@@ -421,3 +470,4 @@ class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
     );
   }
 }
+

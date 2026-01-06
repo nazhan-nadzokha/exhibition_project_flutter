@@ -1,550 +1,733 @@
 import 'Login.dart';
 import 'package:flutter/material.dart';
 import 'ExhibitionGuest.dart';
-import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_laucher
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import '../organizer/model/event_model.dart'; // Import your Event model
 
-
-
-class GuestPage extends StatefulWidget {
+class GuestPage extends StatelessWidget {
   const GuestPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: Scaffold(
-      appBar:AppBar(
-        toolbarHeight: 69,
-        backgroundColor: Colors.blueGrey,
-        title:  const Text('Berjaya Convention'),
-
-
-//Account Icon
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const LoginPage()));
-            },
-          ),
-        ],
-      ),
-//Create Drawer
-      drawer:Drawer(
-          child:Container( color:Colors.blueGrey.shade200 ,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 69,
+          backgroundColor: Colors.blueGrey,
+          title: const Text('Berjaya Convention'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.account_circle_outlined),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginPage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        drawer: Drawer(
+          child: Container(
+            color: Colors.blueGrey.shade200,
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                SizedBox(height: 100,
-                  child: DrawerHeader(decoration: BoxDecoration(color: Colors.blueGrey.shade500),
-                    child: const Text('Explore More Our Service',
+                SizedBox(
+                  height: 100,
+                  child: DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey.shade500,
+                    ),
+                    child: const Text(
+                      'Explore More Our Service',
                       style: TextStyle(color: Colors.white),
                     ),
-
                   ),
                 ),
                 ListTile(
                   leading: const Icon(Icons.emoji_events),
                   title: const Text('Exhibition'),
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ExhibitionGuest()));
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ExhibitionGuest(),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.login),
                   title: const Text('Login/Register'),
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const LoginPage()));
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
                   },
                 ),
               ],
             ),
-          )
-      ),
-      body:SingleChildScrollView(
-        child: Column( //Header
-          children: [
-            Container(
-              width: double.infinity,  // This makes it full width
-              height: 130,
-              padding:const EdgeInsets.all(24) ,
-              decoration:const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors:[Color(0xFF2563eb),
-                        Color(0xFF1e40af),] )
-              ) ,
-              child: const Text('Welcome to \nBerjaya International Convention Center',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Welcome Header
+              Container(
+                width: double.infinity,
+                height: 130,
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF2563eb),
+                      Color(0xFF1e40af),
+                    ],
+                  ),
+                ),
+                child: const Text(
+                  'Welcome to \nBerjaya International Convention Center',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
 
+              // "Current Event" Title
+              const CurrentEventsTitle(),
 
-            // "Current Event" Title
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Current Event',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+              // Current Events from Organizer's Database
+              const CurrentEventsSection(),
+
+              const SizedBox(height: 40),
+
+              // "Upcoming Event" Title
+              const UpcomingEventsTitle(),
+
+              // Upcoming Events from Organizer's Database
+              const UpcomingEventsSection(),
+
+              const SizedBox(height: 40),
+
+              // Booth Layout Title
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.map_outlined,
                       color: Colors.blueGrey,
+                      size: 24,
                     ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ExhibitionGuest()));
-                    },
-                    child: const Text(
-                      'See All',
+                    SizedBox(width: 8),
+                    Text(
+                      'Booth Layout',
                       style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            //Current Card
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
+              const LayoutCard(),
+              const SizedBox(height: 20),
+              const BookButton(),
+              const NoticeText(),
+              const SizedBox(height: 40),
 
-            const CurentCard(),
-
-            const SizedBox(height: 20),
-            const CurentCard2(),
-
-
-
-            const SizedBox(height: 40),// gap
-
-            //Upcoming Event
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Upcoming Event',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+              // Contact us title
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.contact_mail,
                       color: Colors.blueGrey,
+                      size: 24,
                     ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ExhibitionGuest()));
-                    },
-                    child: const Text(
-                      'See All',
+                    SizedBox(width: 8),
+                    Text(
+                      'Contact Us',
                       style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            //Current Card
-            const UpcomingCard(),
-            const SizedBox(height: 20),
-            const UpcomingCard2(),
 
-            const SizedBox(height: 40),// gap
-
-// Booth Layout Title
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.map_outlined,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Booth Layout',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            const LayoutCard(),
-            const SizedBox(height: 20,),
-            const BookButton(),
-            const NoticeText(),
-            const SizedBox(height: 40,),
-
-            //Contact us title
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.contact_mail,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Contact Us',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20,),
-            const ContactCard(),
-
-
-
-
-          ],
+              const SizedBox(height: 20),
+              const ContactCard(),
+            ],
+          ),
         ),
-
       ),
-    ));
+    );
   }
 }
 
+// ============== CURRENT EVENTS SECTION ==============
 
+class CurrentEventsTitle extends StatelessWidget {
+  const CurrentEventsTitle({super.key});
 
-class CurentCard extends StatelessWidget{
-  const CurentCard({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.event,
+            color: Colors.blueGrey,
+            size: 24,
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Current Events',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey,
+            ),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ExhibitionGuest(),
+                ),
+              );
+            },
+            child: const Text(
+              'See All',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CurrentEventsSection extends StatelessWidget {
+  const CurrentEventsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('events') // Organizer's events collection
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const  Center(child: CircularProgressIndicator()
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading events')
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No events available')
+          );
+        }
+
+        // We'll fetch booth data and process events in a separate async call
+        return FutureBuilder<List<Event>>(
+          future: _processEvents(snapshot.data!.docs),
+          builder: (context, eventsSnapshot) {
+            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 220,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!eventsSnapshot.hasData || eventsSnapshot.data!.isEmpty) {
+              return Container(
+                height: 220,
+                child: const Center(child: Text('No current events')),
+              );
+            }
+
+            // Filter to only current events
+            final currentEvents = eventsSnapshot.data!
+                .where((event) => event.isOngoing)
+                .take(2)
+                .toList();
+
+            if (currentEvents.isEmpty) {
+              return Container(
+                height: 220,
+                child: const Center(child: Text('No current events')),
+              );
+            }
+
+            return Column(
+              children: [
+                for (var event in currentEvents)
+                  CurrentEventCard(event: event),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Event>> _processEvents(List<QueryDocumentSnapshot> docs) async {
+    final List<Event> events = [];
+
+    for (var doc in docs) {
+      try {
+        // Get booths for this event
+        final booths = await _getBoothsForEvent(doc.id);
+
+        // Create Event object using your model
+        final event = Event.fromFirestore(doc, booths);
+        events.add(event);
+      } catch (e) {
+        print('Error processing event ${doc.id}: $e');
+      }
+    }
+
+    return events;
+  }
+
+  Future<List<Booth>> _getBoothsForEvent(String eventId) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('booths')
+          .where('eventId', isEqualTo: eventId)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => Booth.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      print('Error fetching booths: $e');
+      return [];
+    }
+  }
+}
+
+class CurrentEventCard extends StatelessWidget {
+  final Event event;
+
+  const CurrentEventCard({super.key, required this.event});
+
+  // Add this method inside the class
+  ImageProvider _getEventImage(String eventName) {
+    // You can customize this based on event types
+    if (eventName.toLowerCase().contains('tech') ||
+        eventName.toLowerCase().contains('digital')) {
+      return const AssetImage('assets/BrandDay.jpg');
+    } else if (eventName.toLowerCase().contains('car') ||
+        eventName.toLowerCase().contains('auto')) {
+      return const AssetImage('assets/Cars.jpg');
+    } else {
+      return const AssetImage('assets/BrandDay.jpg');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-
         width: 350,
-        height: 200,
-        decoration:  BoxDecoration(
-          border:  Border.all(
+        constraints: const BoxConstraints(
+          minHeight: 180, // Minimum height instead of fixed
+          maxHeight: 250, // Optional: set a maximum
+        ),
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/BrandDay.jpg'),
-              fit: BoxFit.cover),
-
+          image: DecorationImage(
+            image: _getEventImage(event.eventName),
+            fit: BoxFit.cover,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Spacer to push description to bottom
             const Spacer(),
-// Description container at bottom
             Container(
-              height: 70,
-              width: double.infinity,
-              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6), // Semi-transparent background
+                color: Colors.black.withOpacity(0.7),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(10.0),
                   bottomRight: Radius.circular(10.0),
                 ),
               ),
-              child: const Text(
-                'Event Description: Annual Tech Conference 2024',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-
-
-    );
-  }
-
-}
-class CurentCard2 extends StatelessWidget{
-  const CurentCard2({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-
-        width: 350,
-        height: 200,
-        decoration:  BoxDecoration(
-          border:  Border.all(
-            color: Colors.black,
-            width: 2.0,
-            style: BorderStyle.solid,
-          ),
-          borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/Cars.jpg'),
-              fit: BoxFit.cover),
-
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Spacer to push description to bottom
-            const Spacer(),
-// Description container at bottom
-            Container(
-              height: 70,
-              width: double.infinity,
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6), // Semi-transparent background
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(10.0),
-                  bottomRight: Radius.circular(10.0),
-                ),
-              ),
-              child: const Text(
-                'Event Description: Annual Tech Conference 2024',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-
-
-    );
-  }
-
-}
-
-class UpcomingCard extends StatelessWidget{
-  const UpcomingCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 350,
-        height: 110,
-        decoration: BoxDecoration(
-          border:  Border.all(
-            color: Colors.black,
-            width: 2.0,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 90,
-              height: 80,
-              decoration:const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors:[Color(0xFF2563eb),
-                        Color(0xFF1e40af),] )
-              ) ,
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'NOV',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '25',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min, // This is key
                 children: [
-                  const Text(
-                    'Asean Summit',
-                    style: TextStyle(
+                  Text(
+                    event.eventName,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Meet our prime minister be as a leader of ASEAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                    maxLines: 2,
+                    maxLines: 2, // Limit to 2 lines
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '3:00 PM - 5:00 PM',
-                    style: TextStyle(
+                    '${DateFormat('MMM d, yyyy').format(event.eventStartDate)} • ${DateFormat('h:mm a').format(event.eventStartTime)}',
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 12,
-                      color: Colors.grey[700],
                     ),
                   ),
-
-                ],
-              ),
-            ))
-          ],
-        ),
-      ),
-    );
-  }
-
-}
-
-class UpcomingCard2 extends StatelessWidget{
-  const UpcomingCard2({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 350,
-        height: 110,
-        decoration: BoxDecoration(
-          border:  Border.all(
-            color: Colors.black,
-            width: 2.0,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 90,
-              height: 80,
-              decoration:const BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors:[Color(0xFF2563eb),
-                        Color(0xFF1e40af),] )
-              ) ,
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'DEC',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '10',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Chip(
+                        label: Text(
+                          '${event.availableBoothsCount} Booths Available',
+                          style: const TextStyle(fontSize: 10, color: Colors.white),
+                        ),
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      Chip(
+                        label: const Text(
+                          'Ongoing',
+                          style: TextStyle(fontSize: 10, color: Colors.white),
+                        ),
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Asean Summit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Meet our prime minister be as a leader of ASEAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '3:00 PM - 5:00 PM',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-
-                ],
-              ),
-            ))
           ],
         ),
       ),
     );
   }
-
 }
 
-class LayoutCard extends StatelessWidget{
+// ============== UPCOMING EVENTS SECTION ==============
+
+class UpcomingEventsTitle extends StatelessWidget {
+  const UpcomingEventsTitle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.event,
+            color: Colors.blueGrey,
+            size: 24,
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Upcoming Events',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey,
+            ),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ExhibitionGuest(),
+                ),
+              );
+            },
+            child: const Text(
+              'See All',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class UpcomingEventsSection extends StatelessWidget {
+  const UpcomingEventsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('events') // Organizer's events collection
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const  Center(child: CircularProgressIndicator()
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading events')
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return  const Center(child: Text('No upcoming events')
+          );
+        }
+
+        // We'll fetch booth data and process events in a separate async call
+        return FutureBuilder<List<Event>>(
+          future: _processEvents(snapshot.data!.docs),
+          builder: (context, eventsSnapshot) {
+            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 120,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!eventsSnapshot.hasData || eventsSnapshot.data!.isEmpty) {
+              return Container(
+                height: 120,
+                child: const Center(child: Text('No upcoming events')),
+              );
+            }
+
+            // Filter to only upcoming events and sort by date
+            final upcomingEvents = eventsSnapshot.data!
+                .where((event) => event.isUpcoming)
+                .toList();
+
+            upcomingEvents.sort((a, b) => a.fullStartDateTime.compareTo(b.fullStartDateTime));
+
+            final limitedEvents = upcomingEvents.take(2).toList();
+
+            if (limitedEvents.isEmpty) {
+              return Container(
+                height: 120,
+                child: const Center(child: Text('No upcoming events')),
+              );
+            }
+
+            return Column(
+              children: [
+                for (var event in limitedEvents)
+                  UpcomingEventCard(event: event),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Event>> _processEvents(List<QueryDocumentSnapshot> docs) async {
+    final List<Event> events = [];
+
+    for (var doc in docs) {
+      try {
+        // Get booths for this event
+        final booths = await _getBoothsForEvent(doc.id);
+
+        // Create Event object using your model
+        final event = Event.fromFirestore(doc, booths);
+        events.add(event);
+      } catch (e) {
+        print('Error processing event ${doc.id}: $e');
+      }
+    }
+
+    return events;
+  }
+
+  Future<List<Booth>> _getBoothsForEvent(String eventId) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('booths')
+          .where('eventId', isEqualTo: eventId)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => Booth.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      print('Error fetching booths: $e');
+      return [];
+    }
+  }
+}
+
+class UpcomingEventCard extends StatelessWidget {
+  final Event event;
+
+  const UpcomingEventCard({super.key, required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final month = DateFormat('MMM').format(event.eventStartDate);
+    final day = event.eventStartDate.day.toString();
+    final time = DateFormat('h:mm a').format(event.eventStartTime);
+
+    return Center(
+      child: Container(
+        width: 350,
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+            width: 2.0,
+            style: BorderStyle.solid,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: IntrinsicHeight( // Use IntrinsicHeight for equal height columns
+          child: Row(
+            children: [
+              // Date Box
+              Container(
+                width: 90,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF2563eb),
+                      Color(0xFF1e40af),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(6),
+                    bottomLeft: Radius.circular(6),
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      month.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      day,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Event Details
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        event.eventName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2, // Allow wrapping
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Starts at $time',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Chip(
+                            label: Text(
+                              '${event.availableBoothsCount} Available',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            backgroundColor: Colors.green[100],
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              DateFormat('MMM d, yyyy').format(event.eventStartDate),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============== YOUR EXISTING WIDGETS (Keep as is) ==============
+
+class LayoutCard extends StatelessWidget {
   const LayoutCard({super.key});
 
   @override
@@ -553,47 +736,49 @@ class LayoutCard extends StatelessWidget{
       child: Container(
         width: 350,
         height: 300,
-        decoration:  BoxDecoration(
-          border:  Border.all(
+        decoration: BoxDecoration(
+          border: Border.all(
             color: Colors.black,
             width: 2.0,
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          image: const DecorationImage(image:AssetImage('assets/Layout.png'),
-              fit: BoxFit.contain),
+          image: const DecorationImage(
+            image: AssetImage('assets/Layout.png'),
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
   }
 }
 
-class BookButton extends StatelessWidget{
+class BookButton extends StatelessWidget {
   const BookButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: FloatingActionButton.extended(
-          backgroundColor: Colors.blueAccent,
-          label:const Text('Booking'),
-          onPressed: () {
+      child: FloatingActionButton.extended(
+        backgroundColor: Colors.blueAccent,
+        label: const Text('Booking'),
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('LOGIN FIRST!!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('LOGIN FIRST!!'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const LoginPage()));
-          },
-
-
-        )
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ),
+          );
+        },
+      ),
     );
   }
-
 }
 
 class NoticeText extends StatelessWidget {
@@ -603,11 +788,11 @@ class NoticeText extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        'Log In First', // You need to provide the text content
+        'Log In First',
         style: TextStyle(
           color: Colors.red,
-          fontWeight:FontWeight.bold,
-          fontSize:14,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );
@@ -627,12 +812,11 @@ class ContactCard extends StatelessWidget {
           color: Colors.amber[50],
           borderRadius: BorderRadius.circular(12.0),
         ),
-        child: Padding(// to create empty space in container
+        child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               const Text(
                 'Contact us now!!!',
                 style: TextStyle(
@@ -641,10 +825,7 @@ class ContactCard extends StatelessWidget {
                   color: Colors.brown,
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // Email Contact Section
               const Text(
                 'Send us an email:',
                 style: TextStyle(
@@ -654,13 +835,11 @@ class ContactCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
               ElevatedButton.icon(
                 onPressed: () async {
                   String? encodeQueryParameters(Map<String, String> params) {
                     return params.entries
-                        .map((MapEntry<String, String> e) =>
-                    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
                         .join('&');
                   }
 
@@ -672,12 +851,11 @@ class ContactCard extends StatelessWidget {
                     }),
                   );
 
-                  if (await canLaunchUrl(emailLaunchUri)){
+                  if (await canLaunchUrl(emailLaunchUri)) {
                     launchUrl(emailLaunchUri);
-                  }else{
+                  } else {
                     throw Exception('Could not launch $emailLaunchUri');
                   }
-
                 },
                 icon: const Icon(Icons.email, size: 20),
                 label: const Padding(
@@ -697,10 +875,7 @@ class ContactCard extends StatelessWidget {
                   minimumSize: const Size(double.infinity, 48),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // Phone Contact Section
               const Text(
                 'SMS us:',
                 style: TextStyle(
@@ -710,15 +885,13 @@ class ContactCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
-              //indirect call
               OutlinedButton.icon(
-                onPressed: () async{
-                  final Uri telLaunchUri = Uri( //determine the scheme and path
+                onPressed: () async {
+                  final Uri telLaunchUri = Uri(
                     scheme: 'tel',
                     path: '+1-555-010-999',
                   );
-                  launchUrl(telLaunchUri); //call Uri
+                  launchUrl(telLaunchUri);
                 },
                 icon: const Icon(Icons.phone, size: 20),
                 label: const Padding(
@@ -742,6 +915,4 @@ class ContactCard extends StatelessWidget {
       ),
     );
   }
-
-
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ApplicationManagementPage extends StatefulWidget {
@@ -10,23 +11,11 @@ class ApplicationManagementPage extends StatefulWidget {
 
 class _ApplicationManagementPageState
     extends State<ApplicationManagementPage> {
-  List<Map<String, String>> applications = [
-    {'id': 'APP001', 'company': 'ABC Tech Sdn Bhd', 'booth': 'A01', 'status': 'Pending', 'reason': ''},
-    {'id': 'APP002', 'company': 'Foodies MY', 'booth': 'B03', 'status': 'Approved', 'reason': ''},
-    {'id': 'APP003', 'company': 'Green Energy Co', 'booth': 'C02', 'status': 'Rejected', 'reason': 'Incomplete form'},
-  ];
+  final CollectionReference _applicationsCollection =
+  FirebaseFirestore.instance.collection('applications');
 
   String _filterStatus = 'All';
   String _searchQuery = '';
-
-  List<Map<String, String>> get _filteredApplications {
-    return applications.where((app) {
-      final matchesStatus = _filterStatus == 'All' || app['status'] == _filterStatus;
-      final matchesSearch = app['company']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          app['id']!.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesStatus && matchesSearch;
-    }).toList();
-  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -34,18 +23,22 @@ class _ApplicationManagementPageState
         return Colors.green;
       case 'Rejected':
         return Colors.red;
+      case 'Cancelled':
+        return Colors.orange;
       default:
         return Colors.orange;
     }
   }
 
-  void _addOrEditApplication({int? index}) {
-    final isEdit = index != null;
+  // Add or Edit Application
+  void _addOrEditApplicationFirestore(String? docId, Map<String, dynamic>? existingData) {
+    final isEdit = docId != null;
+
     final TextEditingController companyController =
-    TextEditingController(text: isEdit ? applications[index]['company'] : '');
+    TextEditingController(text: existingData?['companyName'] ?? '');
     final TextEditingController boothController =
-    TextEditingController(text: isEdit ? applications[index]['booth'] : '');
-    String status = isEdit ? applications[index]['status']! : 'Pending';
+    TextEditingController(text: existingData?['booth'] ?? '');
+    String status = existingData?['status'] ?? 'Pending';
 
     showDialog(
       context: context,
@@ -54,11 +47,16 @@ class _ApplicationManagementPageState
         content: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(controller: companyController, decoration: const InputDecoration(labelText: 'Company Name')),
-              TextField(controller: boothController, decoration: const InputDecoration(labelText: 'Booth')),
+              TextField(
+                  controller: companyController,
+                  decoration:
+                  const InputDecoration(labelText: 'Company Name')),
+              TextField(
+                  controller: boothController,
+                  decoration: const InputDecoration(labelText: 'Booth')),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                initialValue: status,
+                value: status,
                 items: const [
                   DropdownMenuItem(value: 'Pending', child: Text('Pending')),
                   DropdownMenuItem(value: 'Approved', child: Text('Approved')),
@@ -74,32 +72,31 @@ class _ApplicationManagementPageState
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                if (isEdit) {
-                  applications[index] = {
-                    'id': applications[index]['id']!,
-                    'company': companyController.text,
-                    'booth': boothController.text,
-                    'status': status,
-                    'reason': '',
-                  };
-                } else {
-                  final newId = 'APP${(applications.length + 1).toString().padLeft(3, '0')}';
-                  applications.add({
-                    'id': newId,
-                    'company': companyController.text,
-                    'booth': boothController.text,
-                    'status': status,
-                    'reason': '',
-                  });
-                }
-              });
+            onPressed: () async {
+              final data = {
+                'companyName': companyController.text,
+                'booth': boothController.text,
+                'status': status,
+                'reason': '',
+                'createdAt': FieldValue.serverTimestamp(),
+              };
+
+              if (isEdit) {
+                await _applicationsCollection.doc(docId).update(data);
+              } else {
+                final newDoc = _applicationsCollection.doc(); // auto-ID
+                await newDoc.set(data);
+              }
+
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isEdit ? 'Application updated' : 'Application added')),
+                SnackBar(
+                    content: Text(
+                        isEdit ? 'Application updated' : 'Application added')),
               );
             },
             child: Text(isEdit ? 'SAVE' : 'ADD'),
@@ -109,30 +106,33 @@ class _ApplicationManagementPageState
     );
   }
 
-  void _updateApplication(int index, String newStatus, [String reason = '']) {
-    setState(() {
-      applications[index]['status'] = newStatus;
-      applications[index]['reason'] = reason;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Application ${applications[index]['id']} is now $newStatus.')),
-    );
-  }
-
-  Future<void> _showReasonDialog(int index, String action) async {
+  // Update Status / Reason
+  void _showReasonDialogFirestore(String docId, String action) {
     final TextEditingController reasonController = TextEditingController();
-    await showDialog(
+
+    showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text('$action Application'),
-        content: TextField(controller: reasonController, decoration: const InputDecoration(hintText: 'Enter reason (optional)')),
+        content: TextField(
+          controller: reasonController,
+          decoration:
+          const InputDecoration(hintText: 'Enter reason (optional)'),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL')),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              await _applicationsCollection.doc(docId).update({
+                'status': action,
+                'reason': reasonController.text,
+              });
               Navigator.pop(context);
-              _updateApplication(index, action, reasonController.text);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Application $docId is now $action.')),
+              );
             },
             child: Text(action.toUpperCase()),
           ),
@@ -141,19 +141,20 @@ class _ApplicationManagementPageState
     );
   }
 
-  void _deleteApplication(int index) {
+  // Delete Application
+  void _deleteApplicationFirestore(String docId) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Application'),
-        content: Text('Are you sure you want to delete ${applications[index]['id']}?'),
+        content: Text('Are you sure you want to delete $docId?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                applications.removeAt(index);
-              });
+            onPressed: () async {
+              await _applicationsCollection.doc(docId).delete();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Application deleted')),
@@ -171,13 +172,15 @@ class _ApplicationManagementPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Application Management'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blueGrey,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: () => _addOrEditApplication()),
+          IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => _addOrEditApplicationFirestore(null, null)),
         ],
       ),
       body: Padding(
@@ -221,59 +224,122 @@ class _ApplicationManagementPageState
               ],
             ),
             const SizedBox(height: 16),
+            // APPLICATION LIST
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredApplications.length,
-                itemBuilder: (context, index) {
-                  final app = _filteredApplications[index];
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _applicationsCollection.snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Application ID: ${app['id']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          Text('Company: ${app['company']}'),
-                          Text('Booth: ${app['booth']}'),
-                          if (app['reason']!.isNotEmpty)
-                            Text('Reason: ${app['reason']}', style: const TextStyle(color: Colors.grey)),
-                          const SizedBox(height: 8),
-                          Row(
+                  final docs = snapshot.data!.docs;
+                  final filtered = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final matchesStatus =
+                        _filterStatus == 'All' || data['status'] == _filterStatus;
+                    final matchesSearch = data['companyName']
+                        .toString()
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase()) ||
+                        doc.id.toLowerCase().contains(_searchQuery.toLowerCase());
+                    return matchesStatus && matchesSearch;
+                  }).toList();
+
+                  if (filtered.isEmpty) {
+                    return const Center(child: Text('No applications found.'));
+                  }
+
+                  return ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final doc = filtered[index];
+                      final data = doc.data() as Map<String, dynamic>;
+
+                      return Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Status: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text(app['status']!, style: TextStyle(color: _statusColor(app['status']!), fontWeight: FontWeight.bold)),
+                              Text('Application ID: ${doc.id}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text('Company: ${data['companyName']}'),
+                              Text('Booth: ${data['booth']}'),
+                              if ((data['reason'] ?? '').toString().isNotEmpty)
+                                Text('Reason: ${data['reason']}',
+                                    style:
+                                    const TextStyle(color: Colors.grey)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Text('Status: ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  Text(data['status'],
+                                      style: TextStyle(
+                                          color: _statusColor(data['status']),
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (data['status'] == 'Pending') ...[
+                                    TextButton(
+                                      onPressed: () => _showReasonDialogFirestore(
+                                          doc.id, 'Rejected'),
+                                      child: const Text('REJECT',
+                                          style: TextStyle(color: Colors.red)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: () => _showReasonDialogFirestore(
+                                          doc.id, 'Approved'),
+                                      child: const Text('APPROVE'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      onPressed: () => _addOrEditApplicationFirestore(
+                                          doc.id, data),
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blueGrey),
+                                    ),
+                                  ] else if (data['status'] == 'Approved') ...[
+                                    ElevatedButton(
+                                      onPressed: () => _showReasonDialogFirestore(
+                                          doc.id, 'Cancelled'),
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.orange),
+                                      child: const Text('CANCEL'),
+                                    ),
+                                  ] else if (data['status'] == 'Rejected') ...[
+                                    IconButton(
+                                      onPressed: () => _addOrEditApplicationFirestore(
+                                          doc.id, data),
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blueGrey),
+                                    ),
+                                  ],
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    onPressed: () =>
+                                        _deleteApplicationFirestore(doc.id),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (app['status'] == 'Pending') ...[
-                                TextButton(onPressed: () => _showReasonDialog(index, 'Rejected'), child: const Text('REJECT', style: TextStyle(color: Colors.red))),
-                                const SizedBox(width: 8),
-                                ElevatedButton(onPressed: () => _showReasonDialog(index, 'Approved'), child: const Text('APPROVE')),
-                                const SizedBox(width: 8),
-                                IconButton(onPressed: () => _addOrEditApplication(index: index), icon: const Icon(Icons.edit, color: Colors.blueGrey)),
-                              ] else if (app['status'] == 'Approved') ...[
-                                ElevatedButton(
-                                  onPressed: () => _showReasonDialog(index, 'Cancelled'),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                                  child: const Text('CANCEL'),
-                                ),
-                              ] else if (app['status'] == 'Rejected') ...[
-                                IconButton(onPressed: () => _addOrEditApplication(index: index), icon: const Icon(Icons.edit, color: Colors.blueGrey)),
-                              ],
-                              const SizedBox(width: 8),
-                              IconButton(onPressed: () => _deleteApplication(index), icon: const Icon(Icons.delete, color: Colors.red)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

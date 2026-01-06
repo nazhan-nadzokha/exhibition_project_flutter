@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_lauche
 
 
 
-class GuestPage extends StatelessWidget {
+class GuestPage extends StatefulWidget {
   const GuestPage({super.key});
 
   @override

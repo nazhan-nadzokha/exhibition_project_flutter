@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'widgets/admin_nav_button.dart';
 import 'application_management.dart';
 import 'exhibition_management.dart';
@@ -42,9 +46,7 @@ class AdminDashboardPage extends StatelessWidget {
                   SummaryCard(title: 'Users', value: totalUsers),
                 ],
               ),
-
               const SizedBox(height: 24),
-
               // ===== ADMIN NAVIGATION =====
               Expanded(
                 child: GridView.count(
@@ -117,7 +119,7 @@ class AdminDashboardPage extends StatelessWidget {
             onPressed: () {
               Navigator.pushNamedAndRemoveUntil(
                 context,
-                '/', // Go to main page
+                '/', // Go to main page (route)
                     (route) => false,
               );
             },
@@ -133,7 +135,6 @@ class AdminDashboardPage extends StatelessWidget {
 class SummaryCard extends StatelessWidget {
   final String title;
   final int value;
-
   const SummaryCard({
     super.key,
     required this.title,

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ExhibitionManagementPage extends StatefulWidget {
@@ -9,39 +10,20 @@ class ExhibitionManagementPage extends StatefulWidget {
 }
 
 class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
-  List<Map<String, String>> exhibitions = [
-    {
-      'id': 'EXH001',
-      'name': 'Malaysia Tech Expo 2025',
-      'date': '12–15 June 2025',
-      'hall': 'Hall A',
-      'status': 'Active',
-    },
-    {
-      'id': 'EXH002',
-      'name': 'Food & Beverage Fair',
-      'date': '20–23 July 2025',
-      'hall': 'Hall B',
-      'status': 'Upcoming',
-    },
-    {
-      'id': 'EXH003',
-      'name': 'Education & Career Expo',
-      'date': '5–7 August 2025',
-      'hall': 'Hall C',
-      'status': 'Active',
-    },
-  ];
+  final CollectionReference _exhibitionsCollection =
+  FirebaseFirestore.instance.collection('exhibitions');
 
-  void _addOrEditExhibition({int? index}) {
-    final isEdit = index != null;
+  // Add or Edit Exhibition
+  void _addOrEditExhibitionFirestore(String? docId, Map<String, dynamic>? existingData) {
+    final isEdit = docId != null;
+
     final TextEditingController nameController =
-    TextEditingController(text: isEdit ? exhibitions[index]['name'] : '');
+    TextEditingController(text: existingData?['title'] ?? '');
     final TextEditingController dateController =
-    TextEditingController(text: isEdit ? exhibitions[index]['date'] : '');
+    TextEditingController(text: existingData?['date'] ?? '');
     final TextEditingController hallController =
-    TextEditingController(text: isEdit ? exhibitions[index]['hall'] : '');
-    String status = isEdit ? exhibitions[index]['status']! : 'Upcoming';
+    TextEditingController(text: existingData?['hall'] ?? '');
+    String status = existingData?['status'] ?? 'Upcoming';
 
     showDialog(
       context: context,
@@ -51,17 +33,14 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
           child: Column(
             children: [
               TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Exhibition Name'),
-              ),
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Exhibition Name')),
               TextField(
-                controller: dateController,
-                decoration: const InputDecoration(labelText: 'Date'),
-              ),
+                  controller: dateController,
+                  decoration: const InputDecoration(labelText: 'Date')),
               TextField(
-                controller: hallController,
-                decoration: const InputDecoration(labelText: 'Hall'),
-              ),
+                  controller: hallController,
+                  decoration: const InputDecoration(labelText: 'Hall')),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: status,
@@ -81,27 +60,22 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                if (isEdit) {
-                  exhibitions[index] = {
-                    'id': exhibitions[index]['id']!,
-                    'name': nameController.text,
-                    'date': dateController.text,
-                    'hall': hallController.text,
-                    'status': status,
-                  };
-                } else {
-                  final newId = 'EXH${(exhibitions.length + 1).toString().padLeft(3, '0')}';
-                  exhibitions.add({
-                    'id': newId,
-                    'name': nameController.text,
-                    'date': dateController.text,
-                    'hall': hallController.text,
-                    'status': status,
-                  });
-                }
-              });
+            onPressed: () async {
+              final data = {
+                'title': nameController.text,
+                'date': dateController.text,
+                'hall': hallController.text,
+                'status': status,
+                'createdAt': FieldValue.serverTimestamp(),
+              };
+
+              if (isEdit) {
+                await _exhibitionsCollection.doc(docId).update(data);
+              } else {
+                final newDoc = _exhibitionsCollection.doc(); // auto-ID
+                await newDoc.set(data);
+              }
+
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(isEdit ? 'Exhibition updated' : 'Exhibition added')),
@@ -114,19 +88,18 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
     );
   }
 
-  void _deleteExhibition(int index) {
+  // Delete Exhibition
+  void _deleteExhibitionFirestore(String docId) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Exhibition'),
-        content: Text('Are you sure you want to delete ${exhibitions[index]['name']}?'),
+        content: const Text('Are you sure you want to delete this exhibition?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                exhibitions.removeAt(index);
-              });
+            onPressed: () async {
+              await _exhibitionsCollection.doc(docId).delete();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Exhibition deleted')),
@@ -152,45 +125,56 @@ class _ExhibitionManagementPageState extends State<ExhibitionManagementPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _addOrEditExhibition(),
+            onPressed: () => _addOrEditExhibitionFirestore(null, null),
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: exhibitions.length,
-        itemBuilder: (context, index) {
-          final exhibition = exhibitions[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              title: Text(exhibition['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('ID: ${exhibition['id']}'),
-                  Text('Date: ${exhibition['date']}'),
-                  Text('Hall: ${exhibition['hall']}'),
-                  Text('Status: ${exhibition['status']}'),
-                ],
-              ),
-              trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'Edit') {
-                    _addOrEditExhibition(index: index);
-                  } else if (value == 'Delete') {
-                    _deleteExhibition(index);
-                  }
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'Edit', child: Text('Edit')),
-                  PopupMenuItem(value: 'Delete', child: Text('Delete')),
-                ],
-              ),
-            ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _exhibitionsCollection.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+
+          final docs = snapshot.data!.docs;
+          if (docs.isEmpty) return const Center(child: Text('No exhibitions found.'));
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  title: Text(data['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ID: ${doc.id}'),
+                      Text('Date: ${data['date'] ?? ''}'),
+                      Text('Hall: ${data['hall'] ?? ''}'),
+                      Text('Status: ${data['status'] ?? ''}'),
+                    ],
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'Edit') {
+                        _addOrEditExhibitionFirestore(doc.id, data);
+                      } else if (value == 'Delete') {
+                        _deleteExhibitionFirestore(doc.id);
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(value: 'Edit', child: Text('Edit')),
+                      PopupMenuItem(value: 'Delete', child: Text('Delete')),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
 }
-

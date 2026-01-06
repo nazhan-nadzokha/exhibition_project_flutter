@@ -340,7 +340,7 @@ class CurrentEventCard extends StatelessWidget {
 
   const CurrentEventCard({super.key, required this.event});
 
-  // Add this method inside the class
+  // TODO:add image method
   ImageProvider _getEventImage(String eventName) {
     // You can customize this based on event types
     if (eventName.toLowerCase().contains('tech') ||
@@ -425,13 +425,13 @@ class CurrentEventCard extends StatelessWidget {
                         backgroundColor: Colors.green,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      Chip(
-                        label: const Text(
+                      const Chip(
+                        label: Text(
                           'Ongoing',
                           style: TextStyle(fontSize: 10, color: Colors.white),
                         ),
                         backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 8),
                       ),
                     ],
                   ),
@@ -726,7 +726,7 @@ class UpcomingEventCard extends StatelessWidget {
   }
 }
 
-// ============== YOUR EXISTING WIDGETS (Keep as is) ==============
+
 
 class LayoutCard extends StatelessWidget {
   const LayoutCard({super.key});

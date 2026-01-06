@@ -4,6 +4,7 @@ import 'Exhibition.dart';
 import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_launcher
 import 'Booking.dart';
 import '../Profile.dart';
+import 'Guest.dart';
 import 'MyBooking.dart';
 
 class HomePage extends StatelessWidget {
@@ -93,95 +94,21 @@ class HomePage extends StatelessWidget {
             ),
 
 
-            // "Current Event" Title
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Current Event',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
-                    },
-                    child: const Text(
-                      'See All',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+// "Current Event" Title
+            const CurrentEventsTitle(),
 
-            //Current Card
-            const SizedBox(height: 20),
+            // Current Events from Organizer's Database
+            const CurrentEventsSection(),
 
-            const CurentCard(),
+            const SizedBox(height: 40),
 
-            const SizedBox(height: 20),
-            const CurentCard2(),
+            // "Upcoming Event" Title
+            const UpcomingEventsTitle(),
 
+            // Upcoming Events from Organizer's Database
+            const UpcomingEventsSection(),
 
-
-            const SizedBox(height: 40),// gap
-
-            //Upcoming Event
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event,
-                    color: Colors.blueGrey,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Upcoming Event',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
-                    },
-                    child: const Text(
-                      'See All',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            //Current Card
-            const UpcomingCard(),
-            const SizedBox(height: 20),
-            const UpcomingCard2(),
-
-            const SizedBox(height: 40),// gap
+            const SizedBox(height: 40),
 
 // Booth Layout Title
             const Padding(

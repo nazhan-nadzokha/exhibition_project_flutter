@@ -6,11 +6,12 @@ import 'Booking.dart';
 import '../Profile.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool? isFromOrganizer;
+  const HomePage({super.key, this.isFromOrganizer = false});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(child: Scaffold(
       appBar:AppBar(
         toolbarHeight: 69,
         backgroundColor: Colors.blueGrey,
@@ -22,7 +23,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.account_circle_outlined),
             onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfilePage()));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfilePage()));
             },
           ),
         ],
@@ -43,9 +44,9 @@ class HomePage extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.emoji_events),
                   title: Text('Exhibition'),
-              onTap: (){
+                  onTap: (){
                     Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Exhibition()));
-              },
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.book),
@@ -66,17 +67,17 @@ class HomePage extends StatelessWidget {
               height: 130,
               padding:const EdgeInsets.all(24) ,
               decoration:const BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                colors:[Color(0xFF2563eb),
-                  Color(0xFF1e40af),] )
+                  gradient: LinearGradient(begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors:[Color(0xFF2563eb),
+                        Color(0xFF1e40af),] )
               ) ,
               child: const Text('Welcome to \nBerjaya International Convention Center',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
@@ -165,7 +166,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             //Current Card
-           const UpcomingCard(),
+            const UpcomingCard(),
             const SizedBox(height: 20),
             const UpcomingCard2(),
 
@@ -235,7 +236,8 @@ class HomePage extends StatelessWidget {
         ),
 
       ),
-    );
+    ));
+
   }
 }
 

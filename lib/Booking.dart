@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'UserHome.dart';
-
+import 'services/firestore_service.dart';
 import 'Exhibition.dart';
 
 class BookingPage extends StatelessWidget {
@@ -12,7 +12,7 @@ class BookingPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         toolbarHeight: 69,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blueGrey,
         title: const Text('Berjaya Convention'),
       ),
       drawer: Drawer(
@@ -37,35 +37,19 @@ class BookingPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const HomePage()),
+                    MaterialPageRoute(builder: (_) => HomePage()),
                   );
-                },
-              ),
-
-              ListTile(
-                leading: const Icon(Icons.emoji_events),
-                title: const Text('Exhibition'),
-                onTap: () {
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const Exhibition()));
                 },
               ),
             ],
           ),
         ),
       ),
-
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Exhibition:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
+          children: const [
             ExhibitionDropdown(),
           ],
         ),
@@ -74,9 +58,7 @@ class BookingPage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// Exhibition Dropdown + Booking Logic
-// ======================================================
+// ===== Firestore-safe ExhibitionDropdown =====
 class ExhibitionDropdown extends StatefulWidget {
   const ExhibitionDropdown({super.key});
 
@@ -85,699 +67,357 @@ class ExhibitionDropdown extends StatefulWidget {
 }
 
 class _ExhibitionDropdownState extends State<ExhibitionDropdown> {
-  Map<String, String>? selectedEvent;
-  String? selectedBooth;
+  String? selectedEventId;          // Firestore document ID
+  Map<String, dynamic>? selectedEventData;  // event fields
+  Map<String, dynamic>? selectedBooth;
   bool showBoothDetails = false;
   bool showPendingMessage = false;
+
   final _formKey = GlobalKey<FormState>();
+  final companyNameCtrl = TextEditingController();
+  final companyEmailCtrl = TextEditingController();
+  final companyDescCtrl = TextEditingController();
+  final exhibitProfileCtrl = TextEditingController();
+  final startDateController = TextEditingController();
+  final endDateController = TextEditingController();
 
-  List<Map<String, String>> currentBooths = [];
-
-  // Checkbox states
   bool extraFurniture = false;
   bool promoSpots = false;
   bool extendedWifi = false;
 
-  // Date controllers
-  TextEditingController startDateController = TextEditingController();
-  TextEditingController endDateController = TextEditingController();
-
-  final Map<String, List<Map<String, String>>> eventBooths = {
-    'Malaysia Brand Day 2026': [
-      {
-        'id': '1',
-        'status': 'Booked',
-        'size': '3x3',
-        'price': 'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '2',
-        'status': 'Available',
-        'size': '3x3',
-        'price': 'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '3',
-        'status': 'Booked',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '4',
-        'status': 'Available',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '5',
-        'status': 'Available',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '6',
-        'status': 'Booked',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '7',
-        'status': 'Available',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '8',
-        'status': 'Booked',
-        'size': '4x4',
-        'price': 'RM4000',
-        'amenities': 'Power, WiFi',
-      },
-    ],
-    'Comic Fiesta 2026': [
-      {
-        'id': '1',
-        'status': 'Booked',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '2',
-        'status': 'Available',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '3',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '4',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '5',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '6',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '7',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '8',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-    ],
-    'International Automodified 2026': [
-      {
-        'id': '1',
-        'status': 'Booked',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '2',
-        'status': 'Available',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '3',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '4',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '5',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '6',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '7',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '8',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-    ],
-    'Healthcare Innovation': [
-      {
-        'id': '1',
-        'status': 'Booked',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '2',
-        'status': 'Available',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '3',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '4',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '5',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '6',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '7',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '8',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-    ],
-    'CyberSecurity Talk': [
-      {
-        'id': '1',
-        'status': 'Booked',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '2',
-        'status': 'Booked',
-        'size':
-            '3x3'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '3',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '4',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '5',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '6',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '7',
-        'status': 'Available',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-      {
-        'id': '8',
-        'status': 'Booked',
-        'size':
-            '4x4'
-            'RM3000',
-        'amenities': 'Power, WiFi',
-      },
-    ],
-
-    // Add other events similarly...
-  };
+  final FirestoreService _fs = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Exhibition Dropdown
-        DropdownButton<Map<String, String>>(
-          isExpanded: true,
-          hint: const Text('Choose an exhibition'),
-          value: selectedEvent,
-          items: Exhibition.events.map((event) {
-            return DropdownMenuItem(value: event, child: Text(event['title']!));
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              selectedEvent = value;
-              selectedBooth = null;
-              showBoothDetails = false;
-              showPendingMessage = false;
-              currentBooths = eventBooths[value!['title']] ?? [];
-            });
+        const Text(
+          'Select Exhibition:',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+
+        // ===== Event Dropdown =====
+        StreamBuilder(
+          stream: _fs.getEvents(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const CircularProgressIndicator();
+
+            final events = snapshot.data!.docs;
+            if (events.isEmpty) return const Text('No events found');
+
+            return DropdownButton<String>(
+              isExpanded: true,
+              hint: const Text('Choose an exhibition'),
+              value: selectedEventId,
+              items: events.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return DropdownMenuItem<String>(
+                  value: doc.id, // 🔥 UNIQUE ID
+                  child: Text(data['eventName'] ?? 'No title'),
+                );
+              }).toList(),
+              onChanged: (value) {
+                final selectedDoc =
+                events.firstWhere((doc) => doc.id == value);
+
+                setState(() {
+                  selectedEventId = value;
+                  selectedEventData =
+                  selectedDoc.data() as Map<String, dynamic>;
+                  selectedBooth = null;
+                  showBoothDetails = false;
+                  showPendingMessage = false;
+                });
+              },
+            );
           },
         ),
 
+
         const SizedBox(height: 20),
 
-        // Event Details
-        if (selectedEvent != null)
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Colors.grey.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    selectedEvent!['title']!,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+        // ===== Booth Grid =====
+        if (selectedEventId != null)
+          StreamBuilder(
+            stream: _fs.getBooths(selectedEventId!),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const CircularProgressIndicator();
+
+              final booths = snapshot.data!.docs;
+              if (booths.isEmpty) return const Text('No booths found');
+
+              final boothWidgets = booths.map<Widget>((doc) {
+                final booth = doc.data() as Map<String, dynamic>;
+
+                final status =
+                (booth['boothStatus'] ?? '').toString().toLowerCase().trim();
+
+                Color color;
+                if (status == 'booked') {
+                  color = Colors.red;
+                } else if (selectedBooth != null &&
+                    selectedBooth!['boothId'] == booth['boothId']) {
+                  color = Colors.blue;
+                } else {
+                  color = Colors.green;
+                }
+
+                return InkWell(
+                  onTap: status == 'available'
+                      ? () {
+                    setState(() {
+                      selectedBooth = booth;
+                      showBoothDetails = true;
+                      showPendingMessage = false;
+                    });
+                  }
+                      : null,
+                  child: Container(
+                    width: 60,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      booth['boothId'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(selectedEvent!['desc']!),
-                  const SizedBox(height: 16),
+                );
+              }).toList();
 
-                  // Floor Plan
-                  const Text(
-                    'Select Booth on Floor Plan:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
+              return Column(
+                children: [
+                  // ===== TOP ROW =====
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🚪 ENTRY
-                      const Column(
-                        children: [
+                      // Entry 1
+                      Column(
+                        children: const [
                           Icon(Icons.door_front_door, size: 36),
-                          Text('Entry', style: TextStyle(fontSize: 12)),
+                          Text("Entry 1", style: TextStyle(fontSize: 12)),
                         ],
                       ),
                       const SizedBox(width: 12),
+
+                      // Booths 1–4
                       Expanded(
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildBooth('1'),
-                                _buildBooth('2'),
-                                _buildBooth('3'),
-                                _buildBooth('4'),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildBooth('5'),
-                                _buildBooth('6'),
-                                const Column(
-                                  children: [
-                                    Icon(Icons.wc, size: 30),
-                                    Text(
-                                      'Toilet',
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                  ],
-                                ),
-                                _buildBooth('7'),
-                                _buildBooth('8'),
-                              ],
-                            ),
-                          ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: boothWidgets.take(4).toList(),
                         ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // Entry 2
+                      Column(
+                        children: const [
+                          Icon(Icons.door_front_door, size: 36),
+                          Text("Entry 2", style: TextStyle(fontSize: 12)),
+                        ],
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Select Button
-                  if (selectedBooth != null && !showBoothDetails)
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          showBoothDetails = true;
-                          showPendingMessage = false;
-                        });
-                      },
-                      child: const Text('Select'),
-                    ),
+                  // ===== BOTTOM ROW =====
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      boothWidgets[4],
+                      const SizedBox(width: 12),
+                      boothWidgets[5],
+                      const SizedBox(width: 20),
 
-                  // Booth Details + Form
-                  if (showBoothDetails && selectedBooth != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Booth Details:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text('Booth ID: $selectedBooth'),
-                        Text(
-                          'Size: ${currentBooths.firstWhere((b) => b['id'] == selectedBooth)['size']}',
-                        ),
-                        Text(
-                          'Price: ${currentBooths.firstWhere((b) => b['id'] == selectedBooth)['price']}',
-                        ),
-                        Text(
-                          'Amenities: ${currentBooths.firstWhere((b) => b['id'] == selectedBooth)['amenities'] ?? 'N/A'}',
-                        ),
-                        const SizedBox(height: 16),
+                      Column(
+                        children: const [
+                          Icon(Icons.wc, size: 36),
+                          Text("Toilet", style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
 
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Company Name',
-                                  border: OutlineInputBorder(),
-                                ),
-                                validator: (v) =>
-                                    v!.isEmpty ? 'Required' : null,
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Company Description',
-                                  border: OutlineInputBorder(),
-                                ),
-                                validator: (v) =>
-                                    v!.isEmpty ? 'Required' : null,
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Exhibit Profile',
-                                  border: OutlineInputBorder(),
-                                ),
-                                validator: (v) =>
-                                    v!.isEmpty ? 'Required' : null,
-                              ),
-
-                              const SizedBox(height: 8),
-                              // Event Start Date with Calendar
-                              TextFormField(
-                                controller: startDateController,
-                                readOnly: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Event Start Date',
-                                  border: OutlineInputBorder(),
-                                ),
-                                onTap: () async {
-                                  DateTime? picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2024),
-                                    lastDate: DateTime(2030),
-                                  );
-                                  if (picked != null) {
-                                    setState(() {
-                                      startDateController.text =
-                                          "${picked.day}/${picked.month}/${picked.year}";
-                                    });
-                                  }
-                                },
-                                validator: (v) =>
-                                    v!.isEmpty ? 'Required' : null,
-                              ),
-                              const SizedBox(height: 8),
-                              // Event End Date with Calendar
-                              TextFormField(
-                                controller: endDateController,
-                                readOnly: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Event End Date',
-                                  border: OutlineInputBorder(),
-                                ),
-                                onTap: () async {
-                                  DateTime? picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2024),
-                                    lastDate: DateTime(2030),
-                                  );
-                                  if (picked != null) {
-                                    setState(() {
-                                      endDateController.text =
-                                          "${picked.day}/${picked.month}/${picked.year}";
-                                    });
-                                  }
-                                },
-                                validator: (v) =>
-                                    v!.isEmpty ? 'Required' : null,
-                              ),
-
-                              const SizedBox(height: 12),
-                              // Add-Ons Checkboxes
-                              CheckboxListTile(
-                                title: const Text('Extra Furniture'),
-                                value: extraFurniture,
-                                onChanged: (val) {
-                                  setState(() {
-                                    extraFurniture = val ?? false;
-                                  });
-                                },
-                              ),
-                              CheckboxListTile(
-                                title: const Text('Promotional Spots'),
-                                value: promoSpots,
-                                onChanged: (val) {
-                                  setState(() {
-                                    promoSpots = val ?? false;
-                                  });
-                                },
-                              ),
-                              CheckboxListTile(
-                                title: const Text('Extended WiFi'),
-                                value: extendedWifi,
-                                onChanged: (val) {
-                                  setState(() {
-                                    extendedWifi = val ?? false;
-                                  });
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => AlertDialog(
-                                        title: const Text(
-                                          'Application Submitted',
-                                        ),
-                                        content: const Text(
-                                          'Your booth application is now Pending Review!',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    setState(() {
-                                      showPendingMessage = true;
-                                    });
-                                  }
-                                },
-                                child: const Text('Submit Application'),
-                              ),
-
-                              if (showPendingMessage)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Text(
-                                    'Your application is pending review',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(width: 20),
+                      boothWidgets[6],
+                      const SizedBox(width: 12),
+                      boothWidgets[7],
+                    ],
+                  ),
                 ],
-              ),
+              );
+            },
+          ),
+
+        const SizedBox(height: 20),
+
+        // ===== Booth Details Form =====
+        if (showBoothDetails && selectedBooth != null)
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: companyNameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Company Name',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: companyEmailCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Company Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: companyDescCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Company Description',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: exhibitProfileCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Exhibit Profile',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: startDateController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Event Start Date',
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      startDateController.text =
+                      "${picked.day}/${picked.month}/${picked.year}";
+                    }
+                  },
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: endDateController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Event End Date',
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      endDateController.text =
+                      "${picked.day}/${picked.month}/${picked.year}";
+                    }
+                  },
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+
+                CheckboxListTile(
+                  title: const Text('Extra Furniture'),
+                  value: extraFurniture,
+                  onChanged: (val) => setState(() => extraFurniture = val ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('Promotional Spots'),
+                  value: promoSpots,
+                  onChanged: (val) => setState(() => promoSpots = val ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('Extended WiFi'),
+                  value: extendedWifi,
+                  onChanged: (val) => setState(() => extendedWifi = val ?? false),
+                ),
+
+                const SizedBox(height: 12),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate() &&
+                        selectedEventId != null &&
+                        selectedBooth != null) {
+                      await _fs.submitBoothApplication(
+                        eventId: selectedEventId!,
+                        eventTitle: selectedEventData!['title'] ?? '',
+                        boothId: selectedBooth!['boothId'] ?? '',
+                        companyName: companyNameCtrl.text,
+                        companyEmail: companyEmailCtrl.text,
+                        companyDesc: companyDescCtrl.text,
+                        exhibitProfile: exhibitProfileCtrl.text,
+                        startDate: startDateController.text,
+                        endDate: endDateController.text,
+                        extraFurniture: extraFurniture,
+                        promoSpots: promoSpots,
+                        extendedWifi: extendedWifi,
+                      );
+
+                      setState(() => showPendingMessage = true);
+
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Application Submitted'),
+                          content: const Text('Your booth application is now Pending Review!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Submit Application'),
+                ),
+
+                if (showPendingMessage)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      'Your application is pending review',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
       ],
-    );
-  }
-
-  // Booth Widget
-  Widget _buildBooth(String boothId) {
-    final booth = currentBooths.firstWhere(
-      (b) => b['id'] == boothId,
-      orElse: () => {'status': 'Unavailable'},
-    );
-
-    Color color;
-    if (booth['status'] == 'Booked') {
-      color = Colors.red;
-    } else if (selectedBooth == boothId) {
-      color = Colors.blue;
-    } else {
-      color = Colors.green;
-    }
-
-    return GestureDetector(
-      onTap: booth['status'] == 'Available'
-          ? () {
-              setState(() {
-                selectedBooth = boothId;
-                showBoothDetails = false;
-                showPendingMessage = false;
-              });
-            }
-          : null,
-      child: Container(
-        width: 60,
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          boothId,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Login.dart';
+import 'Profile.dart';
 import 'UserHome.dart';
 import 'Booking.dart';
 
@@ -147,7 +147,7 @@ class Exhibition extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
+                MaterialPageRoute(builder: (_) => const RealTimeProfilePage()),
               );
             },
           ),

@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController phoneController = TextEditingController();
 
   final AuthService authService = AuthService();
-  final UserService userService = UserService();
+
 
   String? errorMessage;
   bool switchValue = false;
@@ -93,28 +93,27 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Use AuthService to create account
+      print('=== STARTING REGISTRATION FROM UI ===');
+      print('Email: ${registerEmailController.text}');
+
+      // Use AuthService to create account WITH all profile data
       final userCredential = await authService.createAccount(
         email: registerEmailController.text.trim(),
         password: registerPasswordController.text,
-      );
-
-      // Create user profile in Firestore (if needed)
-      await userService.createUserProfile(
-        email: registerEmailController.text.trim(),
         firstName: firstNameController.text.trim(),
         lastName: lastNameController.text.trim(),
         dob: dobController.text.trim(),
         phone: phoneController.text.trim(),
-        userId: userCredential.user!.uid,
-        role: 'User',
       );
 
-      // Show success message and switch to login
+      print('=== REGISTRATION UI: Success ===');
+
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registration successful! Please login.'),
+          content: Text('Registration successful! Please check your email for verification.'),
           backgroundColor: Colors.green,
+          duration: Duration(seconds: 5),
         ),
       );
 
@@ -125,13 +124,22 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         isLogin = true;
       });
+
     } on FirebaseAuthException catch (e) {
+      print('=== REGISTRATION UI: FirebaseAuthException ===');
+      print('Error code: ${e.code}');
+      print('Error message: ${e.message}');
+
       setState(() {
         errorMessage = _getRegisterErrorMessage(e.code);
       });
+
     } catch (e) {
+      print('=== REGISTRATION UI: General Exception ===');
+      print('Error: $e');
+
       setState(() {
-        errorMessage = 'Registration failed. Please try again';
+        errorMessage = 'Registration failed: $e';
       });
     } finally {
       setState(() {

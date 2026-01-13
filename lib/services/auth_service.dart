@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService{
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final UserService userService = UserService();
 
   User? get currentUser => firebaseAuth.currentUser;
 
@@ -21,8 +22,81 @@ class AuthService{
   Future<UserCredential> createAccount({
     required String email,
     required String password,
+    required String firstName,
+    required String lastName,
+    required String dob,
+    required String phone,
+    String role = 'user',
   }) async {
-    return await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    try {
+      print('=== REGISTRATION DEBUG ===');
+      print('1. Creating Firebase Auth user...');
+
+      // 1. Create auth user
+      final UserCredential userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final String userId = userCredential.user!.uid;
+      print('✅ Auth created. User ID: $userId');
+      print('User email: ${userCredential.user!.email}');
+      print('Is email verified: ${userCredential.user!.emailVerified}');
+
+      // 2. Prepare data for Firestore
+      final userData = {
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'dob': dob,
+        'phone': phone,
+        'role': role,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      print('2. Preparing to save to Firestore...');
+      print('Collection: users');
+      print('Document ID: $userId');
+      print('Data to save:');
+      userData.forEach((key, value) => print('  - $key: $value'));
+
+      // 3. Save to Firestore
+      print('3. Saving to Firestore...');
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .set(userData);
+
+      print('✅ Firestore write successful!');
+
+      // 4. Send verification email
+      print('4. Sending verification email...');
+      await userCredential.user!.sendEmailVerification();
+      print('✅ Verification email sent');
+
+      print('=== REGISTRATION COMPLETE ===');
+      return userCredential;
+
+    } catch (e) {
+      print('❌ REGISTRATION ERROR: $e');
+      print('Error type: ${e.runtimeType}');
+
+      // Check if it's a FirebaseAuthException
+      if (e is FirebaseAuthException) {
+        print('Firebase Auth Error Code: ${e.code}');
+        print('Firebase Auth Error Message: ${e.message}');
+      }
+
+      // Check if it's a FirebaseException (Firestore)
+      if (e is FirebaseException) {
+        print('Firestore Error Code: ${e.code}');
+        print('Firestore Error Message: ${e.message}');
+      }
+
+      rethrow;
+    }
   }
   //logout
   Future<void> signOut() async {
@@ -52,20 +126,81 @@ class UserService {
     required String phone,
     String role = 'user',
   }) async {
-    await _firestore.collection('users').doc(userId).set({
-      'email': email,
-      'firstName': firstName,
-      'lastName': lastName,
-      'dob': dob,
-      'phone': phone,
-      'role': role,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    try{
+      print('Creating Firestore document for: $userId'); // Debug log
+
+      await _firestore.collection('users').doc(userId).set({
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'dob': dob,
+        'phone': phone,
+        'role': role,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      print('Firestore document created successfully'); // Debug log
+    }catch(e){
+      print('Error creating Firestore profile: $e'); // Debug log
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     final doc = await _firestore.collection('users').doc(userId).get();
     return doc.data();
+  }
+  Future<void> updateUserProfile({
+    required String userId,
+    String? firstName,
+    String? lastName,
+    String? dob,
+    String? phone,
+  }) async {
+    final Map<String, dynamic> updates = {
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (firstName != null) updates['firstName'] = firstName;
+    if (lastName != null) updates['lastName'] = lastName;
+    if (dob != null) updates['dob'] = dob;
+    if (phone != null) updates['phone'] = phone;
+
+    await _firestore.collection('users').doc(userId).update(updates);
+  }
+  // Real-time stream of user profile
+  Stream<Map<String, dynamic>?> streamUserProfile(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) => snapshot.data());
+  }
+
+  // Real-time stream of all users (for admin)
+  Stream<List<Map<String, dynamic>>> streamAllUsers() {
+    return _firestore
+        .collection('users')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => {
+      'id': doc.id,
+      ...doc.data(),
+    })
+        .toList());
+  }
+
+  // Real-time stream with filtering (e.g., by role)
+  Stream<List<Map<String, dynamic>>> streamUsersByRole(String role) {
+    return _firestore
+        .collection('users')
+        .where('role', isEqualTo: role)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => {
+      'id': doc.id,
+      ...doc.data(),
+    })
+        .toList());
   }
 }

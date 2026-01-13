@@ -1,9 +1,9 @@
-import 'Login.dart';
 import 'package:flutter/material.dart';
-import 'ExhibitionGuest.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'Login.dart';
+import 'ExhibitionGuest.dart';
 import '../organizer/model/event_model.dart'; // Import your Event model
 
 class GuestPage extends StatelessWidget {
@@ -70,7 +70,6 @@ class GuestPage extends StatelessWidget {
                     );
                   },
                 ),
-
               ],
             ),
           ),
@@ -235,102 +234,86 @@ class CurrentEventsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('events') // Organizer's events collection
-          .snapshots(),
+    return FutureBuilder<List<Event>>(
+      future: _fetchEventsWithBooths(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const  Center(child: CircularProgressIndicator()
+          return const SizedBox(
+            height: 220,
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
-          return const Center(child: Text('Error loading events')
+          print('Error fetching events: ${snapshot.error}');
+          return const SizedBox(
+            height: 220,
+            child: Center(child: Text('Error loading events')),
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No events available')
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox(
+            height: 220,
+            child: Center(child: Text('No events available')),
           );
         }
 
-        // We'll fetch booth data and process events in a separate async call
-        return FutureBuilder<List<Event>>(
-          future: _processEvents(snapshot.data!.docs),
-          builder: (context, eventsSnapshot) {
-            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 220,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
+        // Filter to only current events
+        final currentEvents = snapshot.data!
+            .where((event) => event.isOngoing)
+            .take(2)
+            .toList();
 
-            if (!eventsSnapshot.hasData || eventsSnapshot.data!.isEmpty) {
-              return Container(
-                height: 220,
-                child: const Center(child: Text('No current events')),
-              );
-            }
+        if (currentEvents.isEmpty) {
+          return const SizedBox(
+            height: 220,
+            child: Center(child: Text('No current events')),
+          );
+        }
 
-            // Filter to only current events
-            final currentEvents = eventsSnapshot.data!
-                .where((event) => event.isOngoing)
-                .take(2)
-                .toList();
-
-            if (currentEvents.isEmpty) {
-              return Container(
-                height: 220,
-                child: const Center(child: Text('No current events')),
-              );
-            }
-
-            return Column(
-              children: [
-                for (var event in currentEvents)
-                  CurrentEventCard(event: event),
-                const SizedBox(height: 20),
-              ],
-            );
-          },
+        return Column(
+          children: [
+            for (var event in currentEvents) CurrentEventCard(event: event),
+            const SizedBox(height: 20),
+          ],
         );
       },
     );
   }
 
-  Future<List<Event>> _processEvents(List<QueryDocumentSnapshot> docs) async {
-    final List<Event> events = [];
-
-    for (var doc in docs) {
-      try {
-        // Get booths for this event
-        final booths = await _getBoothsForEvent(doc.id);
-
-        // Create Event object using your model
-        final event = Event.fromFirestore(doc, booths);
-        events.add(event);
-      } catch (e) {
-        print('Error processing event ${doc.id}: $e');
-      }
-    }
-
-    return events;
-  }
-
-  Future<List<Booth>> _getBoothsForEvent(String eventId) async {
+  Future<List<Event>> _fetchEventsWithBooths() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('booths')
-          .where('eventId', isEqualTo: eventId)
-          .get();
+      // Fetch all events
+      final eventsSnapshot =
+      await FirebaseFirestore.instance.collection('events').get();
 
-      return querySnapshot.docs
-          .map((doc) => Booth.fromFirestore(doc))
-          .toList();
+      final List<Event> events = [];
+
+      for (var doc in eventsSnapshot.docs) {
+        try {
+          // Get booths for this event
+          final boothsQuery = await FirebaseFirestore.instance
+              .collection('booths')
+              .where('eventId', isEqualTo: doc.id)
+              .get();
+
+          final List<Booth> booths = boothsQuery.docs
+              .map((boothDoc) => Booth.fromFirestore(boothDoc))
+              .toList();
+
+          // Create Event object using your model
+          final event = Event.fromFirestore(doc, booths);
+          events.add(event);
+        } catch (e) {
+          print('Error processing event ${doc.id}: $e');
+        }
+      }
+
+      return events;
     } catch (e) {
-      print('Error fetching booths: $e');
-      return [];
+      print('Error fetching events: $e');
+      throw e;
     }
   }
 }
@@ -340,7 +323,7 @@ class CurrentEventCard extends StatelessWidget {
 
   const CurrentEventCard({super.key, required this.event});
 
-  // TODO:add image method
+  // TODO: add image method
   ImageProvider _getEventImage(String eventName) {
     // You can customize this based on event types
     if (eventName.toLowerCase().contains('tech') ||
@@ -354,15 +337,14 @@ class CurrentEventCard extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
         width: 350,
         constraints: const BoxConstraints(
-          minHeight: 180, // Minimum height instead of fixed
-          maxHeight: 250, // Optional: set a maximum
+          minHeight: 180,
+          maxHeight: 250,
         ),
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
@@ -392,7 +374,7 @@ class CurrentEventCard extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min, // This is key
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     event.eventName,
@@ -401,7 +383,7 @@ class CurrentEventCard extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
-                    maxLines: 2, // Limit to 2 lines
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
@@ -420,7 +402,8 @@ class CurrentEventCard extends StatelessWidget {
                       Chip(
                         label: Text(
                           '${event.availableBoothsCount} Booths Available',
-                          style: const TextStyle(fontSize: 10, color: Colors.white),
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.white),
                         ),
                         backgroundColor: Colors.green,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -428,7 +411,8 @@ class CurrentEventCard extends StatelessWidget {
                       const Chip(
                         label: Text(
                           'Ongoing',
-                          style: TextStyle(fontSize: 10, color: Colors.white),
+                          style:
+                          TextStyle(fontSize: 10, color: Colors.white),
                         ),
                         backgroundColor: Colors.blue,
                         padding: EdgeInsets.symmetric(horizontal: 8),
@@ -498,105 +482,91 @@ class UpcomingEventsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('events') // Organizer's events collection
-          .snapshots(),
+    return FutureBuilder<List<Event>>(
+      future: _fetchEventsWithBooths(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const  Center(child: CircularProgressIndicator()
+          return const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
-          return const Center(child: Text('Error loading events')
+          print('Error fetching upcoming events: ${snapshot.error}');
+          return const SizedBox(
+            height: 120,
+            child: Center(child: Text('Error loading events')),
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return  const Center(child: Text('No upcoming events')
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: Text('No upcoming events')),
           );
         }
 
-        // We'll fetch booth data and process events in a separate async call
-        return FutureBuilder<List<Event>>(
-          future: _processEvents(snapshot.data!.docs),
-          builder: (context, eventsSnapshot) {
-            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 120,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
+        // Filter to only upcoming events and sort by date
+        final upcomingEvents = snapshot.data!
+            .where((event) => event.isUpcoming)
+            .toList();
 
-            if (!eventsSnapshot.hasData || eventsSnapshot.data!.isEmpty) {
-              return Container(
-                height: 120,
-                child: const Center(child: Text('No upcoming events')),
-              );
-            }
+        upcomingEvents
+            .sort((a, b) => a.fullStartDateTime.compareTo(b.fullStartDateTime));
 
-            // Filter to only upcoming events and sort by date
-            final upcomingEvents = eventsSnapshot.data!
-                .where((event) => event.isUpcoming)
-                .toList();
+        final limitedEvents = upcomingEvents.take(2).toList();
 
-            upcomingEvents.sort((a, b) => a.fullStartDateTime.compareTo(b.fullStartDateTime));
+        if (limitedEvents.isEmpty) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: Text('No upcoming events')),
+          );
+        }
 
-            final limitedEvents = upcomingEvents.take(2).toList();
-
-            if (limitedEvents.isEmpty) {
-              return Container(
-                height: 120,
-                child: const Center(child: Text('No upcoming events')),
-              );
-            }
-
-            return Column(
-              children: [
-                for (var event in limitedEvents)
-                  UpcomingEventCard(event: event),
-                const SizedBox(height: 20),
-              ],
-            );
-          },
+        return Column(
+          children: [
+            for (var event in limitedEvents)
+              UpcomingEventCard(event: event),
+            const SizedBox(height: 20),
+          ],
         );
       },
     );
   }
 
-  Future<List<Event>> _processEvents(List<QueryDocumentSnapshot> docs) async {
-    final List<Event> events = [];
-
-    for (var doc in docs) {
-      try {
-        // Get booths for this event
-        final booths = await _getBoothsForEvent(doc.id);
-
-        // Create Event object using your model
-        final event = Event.fromFirestore(doc, booths);
-        events.add(event);
-      } catch (e) {
-        print('Error processing event ${doc.id}: $e');
-      }
-    }
-
-    return events;
-  }
-
-  Future<List<Booth>> _getBoothsForEvent(String eventId) async {
+  Future<List<Event>> _fetchEventsWithBooths() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('booths')
-          .where('eventId', isEqualTo: eventId)
-          .get();
+      // Fetch all events
+      final eventsSnapshot =
+      await FirebaseFirestore.instance.collection('events').get();
 
-      return querySnapshot.docs
-          .map((doc) => Booth.fromFirestore(doc))
-          .toList();
+      final List<Event> events = [];
+
+      for (var doc in eventsSnapshot.docs) {
+        try {
+          // Get booths for this event
+          final boothsQuery = await FirebaseFirestore.instance
+              .collection('booths')
+              .where('eventId', isEqualTo: doc.id)
+              .get();
+
+          final List<Booth> booths = boothsQuery.docs
+              .map((boothDoc) => Booth.fromFirestore(boothDoc))
+              .toList();
+
+          // Create Event object using your model
+          final event = Event.fromFirestore(doc, booths);
+          events.add(event);
+        } catch (e) {
+          print('Error processing event ${doc.id}: $e');
+        }
+      }
+
+      return events;
     } catch (e) {
-      print('Error fetching booths: $e');
-      return [];
+      print('Error fetching events: $e');
+      throw e;
     }
   }
 }
@@ -624,7 +594,7 @@ class UpcomingEventCard extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: IntrinsicHeight( // Use IntrinsicHeight for equal height columns
+        child: IntrinsicHeight(
           child: Row(
             children: [
               // Date Box
@@ -681,7 +651,7 @@ class UpcomingEventCard extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 2, // Allow wrapping
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
@@ -705,7 +675,8 @@ class UpcomingEventCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              DateFormat('MMM d, yyyy').format(event.eventStartDate),
+                              DateFormat('MMM d, yyyy')
+                                  .format(event.eventStartDate),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[700],
@@ -725,8 +696,6 @@ class UpcomingEventCard extends StatelessWidget {
     );
   }
 }
-
-
 
 class LayoutCard extends StatelessWidget {
   const LayoutCard({super.key});
@@ -838,9 +807,11 @@ class ContactCard extends StatelessWidget {
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () async {
-                  String? encodeQueryParameters(Map<String, String> params) {
+                  String? encodeQueryParameters(
+                      Map<String, String> params) {
                     return params.entries
-                        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                        .map((e) =>
+                    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
                         .join('&');
                   }
 

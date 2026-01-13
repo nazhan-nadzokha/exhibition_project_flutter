@@ -1,4 +1,4 @@
-
+//Home page after login
 import 'package:flutter/material.dart';
 import 'Exhibition.dart';
 import 'package:url_launcher/url_launcher.dart'; // 3rd party package url_launcher
@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
     return SafeArea(child: Scaffold(
       appBar:AppBar(
         toolbarHeight: 69,
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.green,
         title:  Text('Berjaya Convention'),
 
 
@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.account_circle_outlined),
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfilePage()));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const RealTimeProfilePage()));
             },
           ),
         ],

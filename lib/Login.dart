@@ -195,47 +195,86 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 
-  // Future<void> _createUserProfile(User user) async {
-  //   // TODO: Implement Firestore user profile creation
-  //   // You'll need to create a Firestore service or add Firestore here
-  //   print('Creating profile for user: ${user.uid}');
-  //   print('Email: ${user.email}');
-  //   print('First Name: ${firstNameController.text}');
-  //   print('Last Name: ${lastNameController.text}');
-  //   print('DOB: ${dobController.text}');
-  //   print('Phone: ${phoneController.text}');
-  //   // storing additional user data:
-  //    await FirebaseFirestore.instance
-  //      .collection('users')
-  //      .doc(user.uid)
-  //      .set({
-  //        'email': user.email,
-  //        'firstName': firstNameController.text,
-  //        'lastName': lastNameController.text,
-  //        'dob': dobController.text,
-  //        'phone': phoneController.text,
-  //        'createdAt': FieldValue.serverTimestamp(),
-  //   //     'role': 'user', // default role
-  //      });
-  // }
+
 
   Future<void> _checkUserRoleAndNavigate(User user) async {
-    final email = user.email ?? '';
+    // Show loading indicator
+    setState(() {
+      isLoading = true;
+    });
 
-    // Check for specific admin/organizer emails
-    if (email == 'admin@berjaya.com') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const AdminDashboardPage()),
+    try {
+      print('=== CHECKING USER ROLE ===');
+      print('User ID: ${user.uid}');
+      print('User Email: ${user.email}');
+
+
+
+      // Get user role from Firestore
+      print('Fetching role from Firestore...');
+      final role = await authService.getUserRole(user.uid);
+      print('✅ Role retrieved: $role');
+
+      // Navigate based on role
+      switch (role.toLowerCase()) {
+        case 'admin':
+          print('Navigating to Admin Dashboard');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const AdminDashboardPage()),
+          );
+          break;
+        case 'organizer':
+          print('Navigating to Organizer Page');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const OrganizerPage()),
+          );
+          break;
+        case 'user':
+          print('Navigating to User Home Page');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+          break;
+        default:
+          print('⚠️ Unknown role: $role. Defaulting to user');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+          break;
+      }
+    } catch (e) {
+      print('❌ ERROR in _checkUserRoleAndNavigate: $e');
+
+      // Fallback: Check email as backup (keep your existing logic)
+      final email = user.email?.toLowerCase() ?? '';
+      print('Using fallback email check: $email');
+
+      if (email.contains('admin@berjaya.com')) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const AdminDashboardPage()),
+        );
+      } else if (email.contains('organizer@berjaya.com')) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const OrganizerPage()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Role verification failed: $e'),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 3),
+        ),
       );
-    } else if (email == 'organizer@berjaya.com') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const OrganizerPage()),
-      );
-    } else {
-      // Default user
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 

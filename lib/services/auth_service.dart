@@ -112,6 +112,48 @@ class AuthService{
   Future<void> sendEmailVerification() async {
     await firebaseAuth.currentUser?.sendEmailVerification();
   }
+  // Add  method to get user role
+  Future<String> getUserRole(String uid) async {
+    try {
+      print('=== GET USER ROLE DEBUG ===');
+      print('Fetching role for user: $uid');
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      if (doc.exists) {
+        final role = doc.data()!['role'] ?? 'user';
+        print('✅ Found role: $role');
+        return role;
+      } else {
+        print('⚠️ No user document found for uid: $uid');
+        return 'user'; // Default role if not found
+      }
+    } catch (e) {
+      print('❌ Error getting user role: $e');
+      print('Error type: ${e.runtimeType}');
+      return 'user'; // Default on error
+    }
+  }
+
+  // Optionally, add a method to update user role (for admin use)
+  Future<void> updateUserRole(String userId, String newRole) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({
+        'role': newRole,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      print('✅ Updated role to $newRole for user: $userId');
+    } catch (e) {
+      print('❌ Error updating user role: $e');
+      rethrow;
+    }
+  }
 }
 //User Profile
 class UserService {
